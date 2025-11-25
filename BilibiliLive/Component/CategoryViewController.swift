@@ -19,6 +19,7 @@ class CategoryViewController: UIViewController, BLTabBarContentVCProtocol {
     var categories = [CategoryDisplayModel]()
     let contentView = UIView()
     weak var currentViewController: UIViewController?
+    private var autoFocusTimer: Timer?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -98,7 +99,15 @@ extension CategoryViewController: UICollectionViewDelegate {
             // 不自动选中
             return
         }
-        collectionView.selectItem(at: nextFocusedIndexPath, animated: true, scrollPosition: .centeredHorizontally)
-        setViewController(vc: categoryModel.contentVC)
+        autoDelayFocus(collectionView: collectionView, categoryModel: categoryModel, indexPath: nextFocusedIndexPath)
+    }
+
+    private func autoDelayFocus(collectionView: UICollectionView, categoryModel: CategoryDisplayModel, indexPath: IndexPath) {
+        autoFocusTimer?.invalidate()
+
+        autoFocusTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { [weak self] _ in
+            collectionView.selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
+            self?.setViewController(vc: categoryModel.contentVC)
+        }
     }
 }
