@@ -39,22 +39,31 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         hotVC.tabBarItem.title = "热门"
         vcs.append(hotVC)
 
-        let rank = RankingViewController()
-        rank.tabBarItem.title = "排行榜"
-        vcs.append(rank)
+//        let rank = RankingViewController()
+//        rank.tabBarItem.title = "排行榜"
+//        vcs.append(rank)
+
+//        let fav = FavoriteViewController()
+//        fav.tabBarItem.title = "收藏"
+//        vcs.append(fav)
+
+        let fav = FollowBangumiViewController()
+        fav.tabBarItem.title = "番剧"
+        vcs.append(fav)
 
         let followVC = FollowsViewController()
-        followVC.tabBarItem.title = "关注"
+        followVC.tabBarItem.title = "动态"
         vcs.append(followVC)
-
-        let fav = FavoriteViewController()
-        fav.tabBarItem.title = "收藏"
-        vcs.append(fav)
 
         let persionVC = PersonalViewController.create()
         persionVC.extendedLayoutIncludesOpaqueBars = true
         persionVC.tabBarItem.title = "我的"
         vcs.append(persionVC)
+
+        // 创建搜索容器视图控制器
+        let searchContainerVC = SearchContainerViewController()
+        searchContainerVC.tabBarItem.image = UIImage(systemName: "magnifyingglass", withConfiguration: UIImage.SymbolConfiguration(font: .preferredFont(forTextStyle: .body)))
+        vcs.append(searchContainerVC)
 
         setViewControllers(vcs, animated: false)
         selectedIndex = UserDefaults.standard.integer(forKey: selectedIndexKey)
