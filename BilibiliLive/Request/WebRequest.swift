@@ -265,6 +265,11 @@ extension WebRequest {
         return res
     }
 
+    static func requestBangumiEpisodeList(seasonID: Int) async throws -> BangumiEpisodeList {
+        let res: BangumiEpisodeList = try await request(url: "https://api.bilibili.com/pgc/view/web/ep/list", parameters: ["season_id": seasonID], dataObj: "result")
+        return res
+    }
+
     static func requestBangumiSeasonView(epid: Int) async throws -> BangumiSeasonView {
         let info: BangumiSeasonView = try await request(url: EndPoint.bangumiSeason, parameters: ["ep_id": epid], dataObj: "result")
         return info
@@ -877,6 +882,11 @@ struct BangumiSeasonInfo: Codable {
     let section: [BangumiInfo]
 }
 
+struct BangumiEpisodeList: Codable {
+    let episodes: [BangumiInfo.Episode]
+    let section: [BangumiInfo]
+}
+
 struct BangumiInfo: Codable, Hashable {
     struct Episode: Codable, Hashable {
         let id: Int
@@ -885,6 +895,24 @@ struct BangumiInfo: Codable, Hashable {
         let cover: URL
         let long_title: String
         let title: String
+        let badge: String?
+        let badge_type: Int?
+
+        enum CodingKeys: String, CodingKey {
+            case id, aid, cid, cover, long_title, title, badge, badge_type
+        }
+
+        init(from decoder: Swift.Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            id = try container.decode(Int.self, forKey: .id)
+            aid = try container.decode(Int.self, forKey: .aid)
+            cid = try container.decode(Int.self, forKey: .cid)
+            cover = try container.decode(URL.self, forKey: .cover)
+            long_title = try container.decodeIfPresent(String.self, forKey: .long_title) ?? ""
+            title = try container.decode(String.self, forKey: .title)
+            badge = try container.decodeIfPresent(String.self, forKey: .badge)
+            badge_type = try container.decodeIfPresent(Int.self, forKey: .badge_type)
+        }
     }
 
     let episodes: [Episode] // 正片剧集列表
@@ -971,6 +999,18 @@ struct VideoPage: Codable, Hashable {
     let epid: Int?
     let from: String
     let part: String
+    let badge: String?
+    let badge_type: Int?
+
+    init(cid: Int, page: Int, epid: Int?, from: String, part: String, badge: String? = nil, badge_type: Int? = nil) {
+        self.cid = cid
+        self.page = page
+        self.epid = epid
+        self.from = from
+        self.part = part
+        self.badge = badge
+        self.badge_type = badge_type
+    }
 }
 
 struct UpSpaceReq: Codable, Hashable {

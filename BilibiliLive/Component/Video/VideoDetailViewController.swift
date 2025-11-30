@@ -182,13 +182,13 @@ class VideoDetailViewController: UIViewController {
         do {
             if seasonId > 0 {
                 isBangumi = true
-                let info = try await WebRequest.requestBangumiInfo(seasonID: seasonId)
-                if let epi = info.main_section.episodes.first ?? info.section.first?.episodes.first {
+                let info = try await WebRequest.requestBangumiEpisodeList(seasonID: seasonId)
+                if let epi = info.episodes.first ?? info.section.first?.episodes.first {
                     aid = epi.aid
                     cid = epi.cid
                     epid = epi.id
                 }
-                pages = info.main_section.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + " " + $0.long_title) })
+                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + " " + $0.long_title, badge: $0.badge, badge_type: $0.badge_type) })
             } else if epid > 0 {
                 isBangumi = true
                 let info = try await WebRequest.requestBangumiInfo(epid: epid)
@@ -198,7 +198,7 @@ class VideoDetailViewController: UIViewController {
                 } else {
                     throw NSError(domain: "get epi fail", code: -1)
                 }
-                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + " " + $0.long_title) })
+                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + " " + $0.long_title, badge: $0.badge, badge_type: $0.badge_type) })
             }
             let data = try await WebRequest.requestDetailVideo(aid: aid)
             self.data = data
@@ -207,7 +207,7 @@ class VideoDetailViewController: UIViewController {
                 isBangumi = true
                 epid = id
                 let info = try await WebRequest.requestBangumiInfo(epid: epid)
-                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + " " + $0.long_title) })
+                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + " " + $0.long_title, badge: $0.badge, badge_type: $0.badge_type) })
             }
             update(with: data)
         } catch let err {
@@ -522,6 +522,14 @@ extension VideoDetailViewController: UICollectionViewDataSource {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BLTextOnlyCollectionViewCell", for: indexPath) as! BLTextOnlyCollectionViewCell
             let page = pages[indexPath.item]
             cell.titleLabel.text = page.part
+            cell.onPressEnded = { [weak self] pressType in
+                guard let self else { return }
+                if pressType == .playPause {
+                    self.pages.reverse()
+                    self.pageCollectionView.reloadData()
+                }
+            }
+            cell.configureBadge(text: page.badge, backgroundColor: page.badge_type == 1 ? .systemBlue : .systemPink)
             return cell
         case replysCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ReplyCell.self), for: indexPath) as! ReplyCell
