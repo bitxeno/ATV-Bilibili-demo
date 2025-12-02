@@ -7,6 +7,7 @@
 
 import Combine
 import Kingfisher
+import SnapKit
 import UIKit
 
 class SearchResultViewController: UIViewController {
@@ -20,6 +21,28 @@ class SearchResultViewController: UIViewController {
         case bangumi(SearchResult.Bangumi)
         case user(SearchResult.User)
         case liveRoom(SearchLiveResult.Result.LiveRoom)
+        case quickLink(QuickLinkItem)
+    }
+
+    struct QuickLinkItem: Hashable {
+        let title: String
+        let icon: String
+        let backgroundColor: UIColor
+
+        init(title: String, icon: String, backgroundColor: UIColor = UIColor(white: 0.2, alpha: 0.8)) {
+            self.title = title
+            self.icon = icon
+            self.backgroundColor = backgroundColor
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(title)
+            hasher.combine(icon)
+        }
+
+        static func == (lhs: QuickLinkItem, rhs: QuickLinkItem) -> Bool {
+            lhs.title == rhs.title && lhs.icon == rhs.icon
+        }
     }
 
     @Published var searchText: String = ""
@@ -105,6 +128,22 @@ class SearchResultViewController: UIViewController {
 
         dataSource.apply(currentSnapshot)
     }
+
+    @MainActor
+    private func showQuickLinks() {
+        currentSnapshot.deleteAllItems()
+
+        let list = SearchList(title: "快速入口", height: .absolute(180), scrollingBehavior: .none)
+        currentSnapshot.appendSections([list])
+
+        let quickLinks = [
+            QuickLinkItem(title: "排行榜", icon: "chart.bar.fill", backgroundColor: UIColor.systemPink),
+            QuickLinkItem(title: "一周必看", icon: "star.fill", backgroundColor: UIColor.systemOrange),
+        ]
+        currentSnapshot.appendItems(quickLinks.map { .quickLink($0) }, toSection: list)
+
+        dataSource.apply(currentSnapshot)
+    }
 }
 
 extension SearchResultViewController {
@@ -168,6 +207,9 @@ extension SearchResultViewController {
             $0.despLabel.text = $2.usign
             $0.imageView.kf.setImage(with: $2.upic.addSchemeIfNeed(), options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
         }
+        let quickLinkCell = UICollectionView.CellRegistration<QuickLinkCell, QuickLinkItem> {
+            $0.configure(with: $2)
+        }
         dataSource = UICollectionViewDiffableDataSource<SearchList, Item>(collectionView: collectionView) {
             collectionView, indexPath, item in
             switch item {
@@ -179,6 +221,8 @@ extension SearchResultViewController {
                 return collectionView.dequeueConfiguredReusableCell(using: userCell, for: indexPath, item: item)
             case let .liveRoom(item):
                 return collectionView.dequeueConfiguredReusableCell(using: displayCell, for: indexPath, item: item)
+            case let .quickLink(item):
+                return collectionView.dequeueConfiguredReusableCell(using: quickLinkCell, for: indexPath, item: item)
             }
         }
 
@@ -227,6 +271,14 @@ extension SearchResultViewController: UICollectionViewDelegate {
             )
             playerVC.room = room
             present(playerVC, animated: true)
+        case let .quickLink(data):
+            if data.title == "排行榜" {
+                let rankVC = RankingViewController()
+                present(rankVC, animated: true)
+            } else if data.title == "一周必看" {
+                let weeklyVC = WeeklyWatchViewController()
+                present(weeklyVC, animated: true)
+            }
         }
     }
 
@@ -262,7 +314,9 @@ extension SearchResultViewController: UISearchResultsUpdating {
             }
         } else {
             suggestDelayWork.cancel()
-            // 添加showHistorySuggest判断避免可能重复执行
+            // 显示快速入口
+            showQuickLinks()
+            // 添加 showHistorySuggest 判断避免可能重复执行
             if !showHistorySuggest {
                 showHistorySuggest = true
                 // 清空搜索词后显示历史搜索词
@@ -487,5 +541,72 @@ class SuggestEntry: NSObject, UISearchSuggestion {
     init(title: String, iconImage: UIImage? = nil) {
         self.title = title
         self.iconImage = iconImage
+    }
+}
+
+class QuickLinkCell: UICollectionViewCell {
+    private let iconImageView = UIImageView()
+    private let titleLabel = UILabel()
+    private let containerView = UIView()
+    private var normalBackgroundColor: UIColor = .init(white: 0.2, alpha: 0.8)
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func setupUI() {
+        containerView.backgroundColor = normalBackgroundColor
+        containerView.layer.cornerRadius = 12
+        contentView.addSubview(containerView)
+
+        iconImageView.contentMode = .scaleAspectFit
+        iconImageView.tintColor = .white
+        containerView.addSubview(iconImageView)
+
+        titleLabel.font = .systemFont(ofSize: 28, weight: .medium)
+        titleLabel.textColor = .white
+        titleLabel.textAlignment = .center
+        containerView.addSubview(titleLabel)
+
+        containerView.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(10)
+        }
+
+        iconImageView.snp.makeConstraints { make in
+            make.trailing.equalTo(titleLabel.snp.leading).offset(-10)
+            make.centerY.equalToSuperview()
+            make.width.height.equalTo(40)
+        }
+
+        titleLabel.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.centerX.equalToSuperview().offset(20)
+        }
+    }
+
+    func configure(with item: SearchResultViewController.QuickLinkItem) {
+        titleLabel.text = item.title
+        iconImageView.image = UIImage(systemName: item.icon)
+        normalBackgroundColor = item.backgroundColor
+        if !isFocused {
+            containerView.backgroundColor = normalBackgroundColor
+        }
+    }
+
+    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        super.didUpdateFocus(in: context, with: coordinator)
+        coordinator.addCoordinatedAnimations {
+            if self.isFocused {
+                self.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)
+            } else {
+                self.transform = .identity
+            }
+        }
     }
 }
