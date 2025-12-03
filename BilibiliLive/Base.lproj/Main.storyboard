@@ -549,6 +549,26 @@
                                                                     <nil key="textColor"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
+                                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pageSortButton" customClass="BLCustomButton" customModule="BilibiliLive" customModuleProvider="target">
+                                                                    <rect key="frame" x="300" y="45" width="50" height="50"/>
+                                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                    <color key="tintColor" name="titleColor"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="width" constant="50" id="sortBtn-width"/>
+                                                                        <constraint firstAttribute="height" constant="50" id="sortBtn-height"/>
+                                                                    </constraints>
+                                                                    <userDefinedRuntimeAttributes>
+                                                                        <userDefinedRuntimeAttribute type="image" keyPath="image" value="arrow.up" catalog="system"/>
+                                                                        <userDefinedRuntimeAttribute type="image" keyPath="onImage" value="arrow.down" catalog="system"/>
+                                                                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                            <real key="value" value="25"/>
+                                                                        </userDefinedRuntimeAttribute>
+                                                                        <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                                                    </userDefinedRuntimeAttributes>
+                                                                    <connections>
+                                                                        <action selector="actionTogglePageSort:" destination="Q5X-tf-Ysh" eventType="primaryActionTriggered" id="sortBtn-action"/>
+                                                                    </connections>
+                                                                </view>
                                                             </subviews>
                                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <constraints>
@@ -558,6 +578,8 @@
                                                                 <constraint firstAttribute="bottom" secondItem="qLh-0S-AdH" secondAttribute="bottom" constant="20" id="OSO-8a-fel"/>
                                                                 <constraint firstItem="ktx-5B-HwA" firstAttribute="leading" secondItem="JAA-Xe-yWz" secondAttribute="leadingMargin" id="fkV-wo-z16"/>
                                                                 <constraint firstItem="ktx-5B-HwA" firstAttribute="top" secondItem="JAA-Xe-yWz" secondAttribute="top" constant="40" id="nyX-Wx-GEc"/>
+                                                                <constraint firstItem="pageSortButton" firstAttribute="leading" secondItem="ktx-5B-HwA" secondAttribute="trailing" constant="15" id="sortBtn-leading"/>
+                                                                <constraint firstItem="pageSortButton" firstAttribute="centerY" secondItem="ktx-5B-HwA" secondAttribute="centerY" id="sortBtn-centerY"/>
                                                             </constraints>
                                                         </view>
                                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FMV-cw-gB4" userLabel="Ugc Collection">
@@ -796,6 +818,7 @@
                         <outlet property="likeButton" destination="lIW-Ax-AbL" id="xRg-iv-fmn"/>
                         <outlet property="noteView" destination="VqR-Fc-Jmv" id="8bX-JN-doo"/>
                         <outlet property="pageCollectionView" destination="qLh-0S-AdH" id="EsJ-d9-ngu"/>
+                        <outlet property="pageSortButton" destination="pageSortButton" id="pageSortButton-outlet"/>
                         <outlet property="pageView" destination="JAA-Xe-yWz" id="5Cy-tC-z0O"/>
                         <outlet property="playButton" destination="lfB-VX-ver" id="9XU-MT-KOf"/>
                         <outlet property="playCountLabel" destination="ahl-Fa-Qpg" id="q6V-be-wNj"/>

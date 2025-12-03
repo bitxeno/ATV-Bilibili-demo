@@ -45,6 +45,11 @@ class SegmentViewController: UIViewController, BLTabBarContentVCProtocol {
         segmentedControl.backgroundColor = .clear
         // segmentedControl.tintColor = .clear
 
+        // Set font size to body style
+        let attributes = [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .body)]
+        segmentedControl.setTitleTextAttributes(attributes, for: .normal)
+        segmentedControl.setTitleTextAttributes(attributes, for: .selected)
+
         view.addSubview(segmentedControl)
         segmentedControl.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)

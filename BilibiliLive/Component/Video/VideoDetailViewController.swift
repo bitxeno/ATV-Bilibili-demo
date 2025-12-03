@@ -42,6 +42,7 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var avatarImageView: UIImageView!
     @IBOutlet var favButton: BLCustomButton!
     @IBOutlet var pageCollectionView: UICollectionView!
+    @IBOutlet var pageSortButton: BLCustomButton!
     @IBOutlet var recommandCollectionView: UICollectionView!
     @IBOutlet var replysCollectionView: UICollectionView!
     @IBOutlet var repliesCollectionViewHeightConstraints: NSLayoutConstraint!
@@ -72,6 +73,7 @@ class VideoDetailViewController: UIViewController {
     private var subTitles: [SubtitleData]?
 
     private var allUgcEpisodes = [VideoDetail.Info.UgcSeason.UgcVideoInfo]()
+    private var isPageOrderReversed = false
 
     private var subscriptions = [AnyCancellable]()
 
@@ -105,6 +107,7 @@ class VideoDetailViewController: UIViewController {
         ugcCollectionView.register(RelatedVideoCell.self, forCellWithReuseIdentifier: String(describing: RelatedVideoCell.self))
         recommandCollectionView.collectionViewLayout = makeRelatedVideoCollectionViewLayout()
         ugcCollectionView.collectionViewLayout = makeRelatedVideoCollectionViewLayout()
+
         noteView.onPrimaryAction = {
             [weak self] note in
             let detail = ContentDetailViewController.createDesp(content: note.label.text ?? "")
@@ -453,6 +456,13 @@ class VideoDetailViewController: UIViewController {
         dislikeButton.isOn.toggle()
         ApiRequest.requestDislike(aid: aid, dislike: dislikeButton.isOn)
     }
+
+    @IBAction func actionTogglePageSort(_ sender: Any) {
+        isPageOrderReversed.toggle()
+        pages.reverse()
+        pageCollectionView.reloadData()
+        pageSortButton.isOn = isPageOrderReversed
+    }
 }
 
 extension VideoDetailViewController: UICollectionViewDelegate {
@@ -525,8 +535,10 @@ extension VideoDetailViewController: UICollectionViewDataSource {
             cell.onPressEnded = { [weak self] pressType in
                 guard let self else { return }
                 if pressType == .playPause {
+                    self.isPageOrderReversed.toggle()
                     self.pages.reverse()
                     self.pageCollectionView.reloadData()
+                    self.pageSortButton.isOn = self.isPageOrderReversed
                 }
             }
             cell.configureBadge(text: page.badge, backgroundColor: page.badge_type == 1 ? .systemBlue : .systemPink)

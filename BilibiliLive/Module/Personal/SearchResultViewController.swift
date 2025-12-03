@@ -21,34 +21,15 @@ class SearchResultViewController: UIViewController {
         case bangumi(SearchResult.Bangumi)
         case user(SearchResult.User)
         case liveRoom(SearchLiveResult.Result.LiveRoom)
-        case quickLink(QuickLinkItem)
-    }
-
-    struct QuickLinkItem: Hashable {
-        let title: String
-        let icon: String
-        let backgroundColor: UIColor
-
-        init(title: String, icon: String, backgroundColor: UIColor = UIColor(white: 0.2, alpha: 0.8)) {
-            self.title = title
-            self.icon = icon
-            self.backgroundColor = backgroundColor
-        }
-
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(title)
-            hasher.combine(icon)
-        }
-
-        static func == (lhs: QuickLinkItem, rhs: QuickLinkItem) -> Bool {
-            lhs.title == rhs.title && lhs.icon == rhs.icon
-        }
+        case rankVideo(VideoDetail.Info)
+        case weeklyVideo(VideoDetail.Info)
     }
 
     @Published var searchText: String = ""
     var cancellable: Cancellable?
     private let suggestDelayWork = DelayWork(delay: 1.0)
     private var showHistorySuggest = false
+    private var isShowingDefaultContent = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -82,6 +63,11 @@ class SearchResultViewController: UIViewController {
 
         let searchResult = try? await searchResultTask
         let liveResult = try? await liveResultTask
+
+        // 搜索词已清空，放弃此次结果
+        if searchText.isEmpty {
+            return
+        }
 
         updateSnapshot(searchResult: searchResult, liveResult: liveResult)
     }
@@ -130,19 +116,54 @@ class SearchResultViewController: UIViewController {
     }
 
     @MainActor
-    private func showQuickLinks() {
+    private func showDefaultContent() async {
+        isShowingDefaultContent = true
         currentSnapshot.deleteAllItems()
 
-        let list = SearchList(title: "快速入口", height: .absolute(180), scrollingBehavior: .none)
-        currentSnapshot.appendSections([list])
+        let defaultHeight = NSCollectionLayoutDimension.fractionalWidth(Settings.displayStyle == .large ? 0.26 : 0.2)
 
-        let quickLinks = [
-            QuickLinkItem(title: "排行榜", icon: "chart.bar.fill", backgroundColor: UIColor.systemPink),
-            QuickLinkItem(title: "一周必看", icon: "star.fill", backgroundColor: UIColor.systemOrange),
-        ]
-        currentSnapshot.appendItems(quickLinks.map { .quickLink($0) }, toSection: list)
+        // 获取排行榜数据（取前20条）
+        if let rankVideos = try? await WebRequest.requestRank(for: 0) {
+            let list = SearchList(title: "排行榜", height: defaultHeight, scrollingBehavior: .continuous)
+            currentSnapshot.appendSections([list])
+            let videos = Array(rankVideos.prefix(20))
+            currentSnapshot.appendItems(videos.map { .rankVideo($0) }, toSection: list)
+        }
 
-        dataSource.apply(currentSnapshot)
+        // 获取一周必看数据（取前20条）
+        if let weeklyList = try? await WebRequest.requestWeeklyWatchList(),
+           let firstWeek = weeklyList.first,
+           let weeklyVideos = try? await WebRequest.requestWeeklyWatch(wid: firstWeek.number)
+        {
+            let list = SearchList(title: "一周必看", height: defaultHeight, scrollingBehavior: .continuous)
+            currentSnapshot.appendSections([list])
+            let videos = Array(weeklyVideos.prefix(20))
+            currentSnapshot.appendItems(videos.map { .weeklyVideo($0) }, toSection: list)
+        }
+
+        await dataSource.apply(currentSnapshot)
+    }
+
+    func reloadData() {
+        // 如果正在显示默认内容，刷新默认内容
+        if isShowingDefaultContent {
+            Task { @MainActor in
+                await showDefaultContent()
+            }
+        } else if !searchText.isEmpty {
+            // 如果有搜索内容，重新执行搜索
+            Task { @MainActor in
+                await performSearch(key: searchText)
+            }
+        }
+    }
+
+    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        super.pressesEnded(presses, with: event)
+        guard let buttonPress = presses.first?.type else { return }
+        if buttonPress == .playPause {
+            reloadData()
+        }
     }
 }
 
@@ -207,8 +228,11 @@ extension SearchResultViewController {
             $0.despLabel.text = $2.usign
             $0.imageView.kf.setImage(with: $2.upic.addSchemeIfNeed(), options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
         }
-        let quickLinkCell = UICollectionView.CellRegistration<QuickLinkCell, QuickLinkItem> {
-            $0.configure(with: $2)
+        let rankVideoCell = UICollectionView.CellRegistration<FeedCollectionViewCell, VideoDetail.Info> {
+            $0.setup(data: $2)
+        }
+        let weeklyVideoCell = UICollectionView.CellRegistration<FeedCollectionViewCell, VideoDetail.Info> {
+            $0.setup(data: $2)
         }
         dataSource = UICollectionViewDiffableDataSource<SearchList, Item>(collectionView: collectionView) {
             collectionView, indexPath, item in
@@ -221,8 +245,10 @@ extension SearchResultViewController {
                 return collectionView.dequeueConfiguredReusableCell(using: userCell, for: indexPath, item: item)
             case let .liveRoom(item):
                 return collectionView.dequeueConfiguredReusableCell(using: displayCell, for: indexPath, item: item)
-            case let .quickLink(item):
-                return collectionView.dequeueConfiguredReusableCell(using: quickLinkCell, for: indexPath, item: item)
+            case let .rankVideo(item):
+                return collectionView.dequeueConfiguredReusableCell(using: rankVideoCell, for: indexPath, item: item)
+            case let .weeklyVideo(item):
+                return collectionView.dequeueConfiguredReusableCell(using: weeklyVideoCell, for: indexPath, item: item)
             }
         }
 
@@ -234,10 +260,43 @@ extension SearchResultViewController {
             }
         }
 
-        dataSource.supplementaryViewProvider = { view, kind, index in
-            return self.collectionView.dequeueConfiguredReusableSupplementary(
-                using: supplementaryRegistration, for: index
-            )
+        let titleWithButtonRegistration = UICollectionView.SupplementaryRegistration<TitleWithButtonSupplementaryView>(elementKind: FavoriteViewController.titleElementKind) {
+            supplementaryView, string, indexPath in
+            if let snapshot = self.currentSnapshot {
+                let videoCategory = snapshot.sectionIdentifiers[indexPath.section]
+                supplementaryView.label.text = videoCategory.title
+
+                // 为排行榜和一周必看添加按钮响应
+                if videoCategory.title == "排行榜" {
+                    supplementaryView.onButtonTapped = { [weak self] in
+                        let rankVC = RankingViewController()
+                        self?.present(rankVC, animated: true)
+                    }
+                } else if videoCategory.title == "一周必看" {
+                    supplementaryView.onButtonTapped = { [weak self] in
+                        let weeklyVC = WeeklyWatchViewController()
+                        self?.present(weeklyVC, animated: true)
+                    }
+                } else {
+                    supplementaryView.onButtonTapped = nil
+                }
+            }
+        }
+
+        dataSource.supplementaryViewProvider = { [weak self] view, kind, index in
+            guard let self = self else { return nil }
+
+            // 判断是否为排行榜或一周必看 section
+            let section = self.currentSnapshot.sectionIdentifiers[index.section]
+            if section.title == "排行榜" || section.title == "一周必看" {
+                return self.collectionView.dequeueConfiguredReusableSupplementary(
+                    using: titleWithButtonRegistration, for: index
+                )
+            } else {
+                return self.collectionView.dequeueConfiguredReusableSupplementary(
+                    using: supplementaryRegistration, for: index
+                )
+            }
         }
 
         currentSnapshot = NSDiffableDataSourceSnapshot<SearchList, Item>()
@@ -271,14 +330,12 @@ extension SearchResultViewController: UICollectionViewDelegate {
             )
             playerVC.room = room
             present(playerVC, animated: true)
-        case let .quickLink(data):
-            if data.title == "排行榜" {
-                let rankVC = RankingViewController()
-                present(rankVC, animated: true)
-            } else if data.title == "一周必看" {
-                let weeklyVC = WeeklyWatchViewController()
-                present(weeklyVC, animated: true)
-            }
+        case let .rankVideo(data):
+            let detailVC = VideoDetailViewController.create(aid: data.aid, cid: data.cid)
+            detailVC.present(from: self)
+        case let .weeklyVideo(data):
+            let detailVC = VideoDetailViewController.create(aid: data.aid, cid: data.cid)
+            detailVC.present(from: self)
         }
     }
 
@@ -305,6 +362,7 @@ extension SearchResultViewController: UISearchResultsUpdating {
         }
 
         if let text = searchController.searchBar.text, !text.isEmpty {
+            isShowingDefaultContent = false
             showHistorySuggest = false
             suggestDelayWork.submit {
                 let result = try await WebRequest.requestSuggest(key: text)
@@ -314,8 +372,11 @@ extension SearchResultViewController: UISearchResultsUpdating {
             }
         } else {
             suggestDelayWork.cancel()
-            // 显示快速入口
-            showQuickLinks()
+            guard !isShowingDefaultContent else { return }
+            // 显示排行榜和一周必看
+            Task { @MainActor in
+                await showDefaultContent()
+            }
             // 添加 showHistorySuggest 判断避免可能重复执行
             if !showHistorySuggest {
                 showHistorySuggest = true
@@ -476,6 +537,15 @@ struct SearchList: Hashable {
     let width = NSCollectionLayoutDimension.fractionalWidth(Settings.displayStyle.fractionalWidth)
     let height: NSCollectionLayoutDimension
     let scrollingBehavior: UICollectionLayoutSectionOrthogonalScrollingBehavior
+
+    // 只使用 title 来计算 hash 和判断相等性
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(title)
+    }
+
+    static func == (lhs: SearchList, rhs: SearchList) -> Bool {
+        return lhs.title == rhs.title
+    }
 }
 
 struct SearchLiveResult: Decodable, Hashable {
@@ -541,72 +611,5 @@ class SuggestEntry: NSObject, UISearchSuggestion {
     init(title: String, iconImage: UIImage? = nil) {
         self.title = title
         self.iconImage = iconImage
-    }
-}
-
-class QuickLinkCell: UICollectionViewCell {
-    private let iconImageView = UIImageView()
-    private let titleLabel = UILabel()
-    private let containerView = UIView()
-    private var normalBackgroundColor: UIColor = .init(white: 0.2, alpha: 0.8)
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupUI()
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    private func setupUI() {
-        containerView.backgroundColor = normalBackgroundColor
-        containerView.layer.cornerRadius = 12
-        contentView.addSubview(containerView)
-
-        iconImageView.contentMode = .scaleAspectFit
-        iconImageView.tintColor = .white
-        containerView.addSubview(iconImageView)
-
-        titleLabel.font = .systemFont(ofSize: 28, weight: .medium)
-        titleLabel.textColor = .white
-        titleLabel.textAlignment = .center
-        containerView.addSubview(titleLabel)
-
-        containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(10)
-        }
-
-        iconImageView.snp.makeConstraints { make in
-            make.trailing.equalTo(titleLabel.snp.leading).offset(-10)
-            make.centerY.equalToSuperview()
-            make.width.height.equalTo(40)
-        }
-
-        titleLabel.snp.makeConstraints { make in
-            make.centerY.equalToSuperview()
-            make.centerX.equalToSuperview().offset(20)
-        }
-    }
-
-    func configure(with item: SearchResultViewController.QuickLinkItem) {
-        titleLabel.text = item.title
-        iconImageView.image = UIImage(systemName: item.icon)
-        normalBackgroundColor = item.backgroundColor
-        if !isFocused {
-            containerView.backgroundColor = normalBackgroundColor
-        }
-    }
-
-    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        super.didUpdateFocus(in: context, with: coordinator)
-        coordinator.addCoordinatedAnimations {
-            if self.isFocused {
-                self.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)
-            } else {
-                self.transform = .identity
-            }
-        }
     }
 }
