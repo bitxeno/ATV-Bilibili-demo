@@ -884,7 +884,7 @@ struct BangumiSeasonInfo: Codable {
 
 struct BangumiEpisodeList: Codable {
     let episodes: [BangumiInfo.Episode]
-    let section: [BangumiInfo]
+    let section: [BangumiInfo]?
 }
 
 struct BangumiInfo: Codable, Hashable {

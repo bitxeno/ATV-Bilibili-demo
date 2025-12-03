@@ -186,7 +186,7 @@ class VideoDetailViewController: UIViewController {
             if seasonId > 0 {
                 isBangumi = true
                 let info = try await WebRequest.requestBangumiEpisodeList(seasonID: seasonId)
-                if let epi = info.episodes.first ?? info.section.first?.episodes.first {
+                if let epi = info.episodes.first ?? info.section?.first?.episodes.first {
                     aid = epi.aid
                     cid = epi.cid
                     epid = epi.id
