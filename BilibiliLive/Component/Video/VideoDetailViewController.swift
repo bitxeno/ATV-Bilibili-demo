@@ -68,6 +68,7 @@ class VideoDetailViewController: UIViewController {
     }
 
     private var isBangumi = false
+    private var bangumiType: BangumiType?
     private var startTime = 0
     private var pages = [VideoPage]()
     private var replys: Replys?
@@ -187,7 +188,7 @@ class VideoDetailViewController: UIViewController {
             if seasonId > 0 {
                 isBangumi = true
                 let info = try await WebRequest.requestBangumiInfo(seasonID: seasonId)
-                if let epi = info.episodes.first(where: { $0.id == info.user_status?.progress?.last_ep_id }) ?? info.episodes.first {
+                if let epi = info.episodes.first(where: { $0.id == info.user_status?.progress?.last_ep_id }) ?? info.episodes.first ?? info.section?.first?.episodes.first {
                     aid = epi.aid
                     cid = epi.cid
                     epid = epi.id
@@ -195,7 +196,8 @@ class VideoDetailViewController: UIViewController {
                         last_ep_index = epi.title
                     }
                 }
-                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + " " + $0.long_title, badge: $0.badge, badge_type: $0.badge_type) })
+                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + "\n" + $0.long_title, badge: $0.badge, badge_type: $0.badge_type) })
+                bangumiType = BangumiType(rawValue: info.type)
             } else if epid > 0 {
                 isBangumi = true
                 let info = try await WebRequest.requestBangumiInfo(epid: epid)
@@ -208,7 +210,8 @@ class VideoDetailViewController: UIViewController {
                 } else {
                     throw NSError(domain: "get epi fail", code: -1)
                 }
-                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + " " + $0.long_title, badge: $0.badge, badge_type: $0.badge_type) })
+                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + "\n" + $0.long_title, badge: $0.badge, badge_type: $0.badge_type) })
+                bangumiType = BangumiType(rawValue: info.type)
             }
             let data = try await WebRequest.requestDetailVideo(aid: aid)
             self.data = data
@@ -217,10 +220,11 @@ class VideoDetailViewController: UIViewController {
                 isBangumi = true
                 epid = id
                 let info = try await WebRequest.requestBangumiInfo(epid: epid)
-                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + " " + $0.long_title, badge: $0.badge, badge_type: $0.badge_type) })
+                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + "\n" + $0.long_title, badge: $0.badge, badge_type: $0.badge_type) })
                 if let epi = info.episodes.first(where: { $0.id == epid }) {
                     last_ep_index = epi.title
                 }
+                bangumiType = BangumiType(rawValue: info.type)
             }
             update(with: data)
         } catch let err {
@@ -311,7 +315,11 @@ class VideoDetailViewController: UIViewController {
 
         // 更新播放按钮标题
         if let lastEpIndex = last_ep_index {
-            playButton.title = "播放 EP\(lastEpIndex)"
+            if bangumiType != .movie, pages.count > 1 {
+                playButton.title = "继续 EP\(lastEpIndex)"
+            } else {
+                playButton.title = "继续播放"
+            }
         } else {
             playButton.title = "播放"
         }
@@ -558,7 +566,7 @@ extension VideoDetailViewController: UICollectionViewDataSource {
                     self.pageSortButton.isOn = self.isPageOrderReversed
                 }
             }
-            cell.configureBadge(text: page.badge, backgroundColor: page.badge_type == 1 ? .systemBlue : .systemPink)
+            cell.configureBadge(text: page.badge, backgroundColor: page.badgeBackgroundColor)
             return cell
         case replysCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ReplyCell.self), for: indexPath) as! ReplyCell

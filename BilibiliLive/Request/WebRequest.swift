@@ -9,6 +9,7 @@ import Alamofire
 import Foundation
 import SwiftProtobuf
 import SwiftyJSON
+import UIKit
 
 enum RequestError: Error {
     case networkFail
@@ -917,8 +918,19 @@ struct BangumiInfo: Codable, Hashable {
         let progress: Progress?
     }
 
+    let type: Int
     let episodes: [Episode] // 正片剧集列表
     let user_status: UserStatus?
+    let section: [BangumiInfo]?
+}
+
+enum BangumiType: Int {
+    case anime = 1
+    case movie = 2
+    case documentary = 3
+    case guochuang = 4
+    case tv = 5
+    case variety = 7
 }
 
 struct BangumiSeasonView: Codable, Hashable {
@@ -1004,6 +1016,17 @@ struct VideoPage: Codable, Hashable {
     let part: String
     let badge: String?
     let badge_type: Int?
+
+    var badgeBackgroundColor: UIColor {
+        switch badge_type {
+        case 1: // 预告
+            return UIColor.systemBlue
+        case 3: // 限免
+            return UIColor.systemOrange
+        default:
+            return UIColor.systemPink
+        }
+    }
 
     init(cid: Int, page: Int, epid: Int?, from: String, part: String, badge: String? = nil, badge_type: Int? = nil) {
         self.cid = cid

@@ -42,10 +42,11 @@ class BLTextOnlyCollectionViewCell: BLMotionCollectionViewCell {
         // Setup badge view
         effectView.contentView.addSubview(badgeView)
         badgeView.snp.makeConstraints { make in
-            make.top.trailing.equalToSuperview().inset(8)
+            make.top.trailing.equalToSuperview()
         }
         badgeView.layer.cornerRadius = 12
-        badgeView.clipsToBounds = true
+        badgeView.layer.maskedCorners = [.layerMinXMaxYCorner]
+        badgeView.layer.masksToBounds = true
         badgeView.isHidden = true
 
         badgeView.addSubview(badgeLabel)
