@@ -16,6 +16,8 @@ struct PlayInfo {
     var seasonId: Int? = 0 // 番剧 season_id
     var isBangumi: Bool = false
     var ctime: Int? = 0
+    var last_play_cid: Int?
+    var playTimeInSecond: Int?
 
     var isCidVaild: Bool {
         return cid ?? 0 > 0

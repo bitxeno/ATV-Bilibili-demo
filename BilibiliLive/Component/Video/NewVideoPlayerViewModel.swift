@@ -104,8 +104,10 @@ class VideoPlayerViewModel {
 
             var detail = PlayerDetailData(aid: playInfo.aid, cid: playInfo.cid!, epid: playInfo.epid, seasonId: playInfo.seasonId, isBangumi: playInfo.isBangumi, detail: videoDetail, clips: clipInfos, playerInfo: info, videoPlayURLInfo: playData)
 
-            if let info, info.last_play_cid == cid, playData.dash.duration - info.playTimeInSecond > 5, Settings.continuePlay {
-                detail.playerStartPos = info.playTimeInSecond
+            let last_play_cid = playInfo.last_play_cid ?? info?.last_play_cid ?? 0
+            let playTimeInSecond = playInfo.playTimeInSecond ?? info?.playTimeInSecond ?? 0
+            if last_play_cid == cid, playData.dash.duration - playTimeInSecond > 5, Settings.continuePlay {
+                detail.playerStartPos = playTimeInSecond
             }
 
             return detail
