@@ -56,6 +56,7 @@ class VideoDetailViewController: UIViewController {
     private var seasonId = 0
     private var aid = 0
     private var cid = 0
+    private var last_ep_index: String?
     private var data: VideoDetail?
     @IBOutlet var scrollView: UIScrollView!
     private var didSentCoins = 0 {
@@ -185,11 +186,14 @@ class VideoDetailViewController: UIViewController {
         do {
             if seasonId > 0 {
                 isBangumi = true
-                let info = try await WebRequest.requestBangumiEpisodeList(seasonID: seasonId)
-                if let epi = info.episodes.first ?? info.section?.first?.episodes.first {
+                let info = try await WebRequest.requestBangumiInfo(seasonID: seasonId)
+                if let epi = info.episodes.first(where: { $0.id == info.user_status?.progress?.last_ep_id }) ?? info.episodes.first {
                     aid = epi.aid
                     cid = epi.cid
                     epid = epi.id
+                    if let progress = info.user_status?.progress, progress.last_ep_id == epi.id {
+                        last_ep_index = epi.title
+                    }
                 }
                 pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + " " + $0.long_title, badge: $0.badge, badge_type: $0.badge_type) })
             } else if epid > 0 {
@@ -198,6 +202,9 @@ class VideoDetailViewController: UIViewController {
                 if let epi = info.episodes.first(where: { $0.id == epid }) ?? info.episodes.first {
                     aid = epi.aid
                     cid = epi.cid
+                    if epi.id == epid {
+                        last_ep_index = epi.title
+                    }
                 } else {
                     throw NSError(domain: "get epi fail", code: -1)
                 }
@@ -211,6 +218,9 @@ class VideoDetailViewController: UIViewController {
                 epid = id
                 let info = try await WebRequest.requestBangumiInfo(epid: epid)
                 pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + " " + $0.long_title, badge: $0.badge, badge_type: $0.badge_type) })
+                if let epi = info.episodes.first(where: { $0.id == epid }) {
+                    last_ep_index = epi.title
+                }
             }
             update(with: data)
         } catch let err {
@@ -298,6 +308,13 @@ class VideoDetailViewController: UIViewController {
         titleLabel.text = data.title
         upButton.title = data.ownerName
         followButton.isOn = data.Card.following
+
+        // 更新播放按钮标题
+        if let lastEpIndex = last_ep_index {
+            playButton.title = "播放 EP\(lastEpIndex)"
+        } else {
+            playButton.title = "播放"
+        }
 
         avatarImageView.kf.setImage(with: data.avatar, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
 
@@ -459,7 +476,6 @@ class VideoDetailViewController: UIViewController {
 
     @IBAction func actionTogglePageSort(_ sender: Any) {
         isPageOrderReversed.toggle()
-        pages.reverse()
         pageCollectionView.reloadData()
         pageSortButton.isOn = isPageOrderReversed
     }
@@ -469,11 +485,12 @@ extension VideoDetailViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         switch collectionView {
         case pageCollectionView:
-            let page = pages[indexPath.item]
+            let desiredIndex = isPageOrderReversed ? pages.count - indexPath.item - 1 : indexPath.item
+            let page = pages[desiredIndex]
             let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, epid: page.epid, seasonId: isBangumi ? seasonId : nil, isBangumi: isBangumi))
             player.data = isBangumi ? nil : data
 
-            let seq = pages.dropFirst(indexPath.item).map({ PlayInfo(aid: aid, cid: $0.cid, seasonId: isBangumi ? seasonId : nil, isBangumi: isBangumi) })
+            let seq = pages.dropFirst(desiredIndex).map({ PlayInfo(aid: aid, cid: $0.cid, seasonId: isBangumi ? seasonId : nil, isBangumi: isBangumi) })
             if seq.count > 0 {
                 let nextProvider = VideoNextProvider(seq: seq)
                 player.nextProvider = nextProvider
@@ -530,13 +547,13 @@ extension VideoDetailViewController: UICollectionViewDataSource {
         switch collectionView {
         case pageCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BLTextOnlyCollectionViewCell", for: indexPath) as! BLTextOnlyCollectionViewCell
-            let page = pages[indexPath.item]
+            let desiredIndex = isPageOrderReversed ? pages.count - indexPath.item - 1 : indexPath.item
+            let page = pages[desiredIndex]
             cell.titleLabel.text = page.part
             cell.onPressEnded = { [weak self] pressType in
                 guard let self else { return }
                 if pressType == .playPause {
                     self.isPageOrderReversed.toggle()
-                    self.pages.reverse()
                     self.pageCollectionView.reloadData()
                     self.pageSortButton.isOn = self.isPageOrderReversed
                 }

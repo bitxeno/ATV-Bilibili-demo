@@ -260,14 +260,9 @@ extension WebRequest {
         return info
     }
 
-    static func requestBangumiInfo(seasonID: Int) async throws -> BangumiSeasonInfo {
-        let res: BangumiSeasonInfo = try await request(url: "https://api.bilibili.com/pgc/web/season/section", parameters: ["season_id": seasonID], dataObj: "result")
-        return res
-    }
-
-    static func requestBangumiEpisodeList(seasonID: Int) async throws -> BangumiEpisodeList {
-        let res: BangumiEpisodeList = try await request(url: "https://api.bilibili.com/pgc/view/web/ep/list", parameters: ["season_id": seasonID], dataObj: "result")
-        return res
+    static func requestBangumiInfo(seasonID: Int) async throws -> BangumiInfo {
+        let info: BangumiInfo = try await request(url: "https://api.bilibili.com/pgc/view/web/season", parameters: ["season_id": seasonID], dataObj: "result")
+        return info
     }
 
     static func requestBangumiSeasonView(epid: Int) async throws -> BangumiSeasonView {
@@ -884,11 +879,6 @@ struct BangumiSeasonInfo: Codable {
     let section: [BangumiInfo]
 }
 
-struct BangumiEpisodeList: Codable {
-    let episodes: [BangumiInfo.Episode]
-    let section: [BangumiInfo]?
-}
-
 struct BangumiInfo: Codable, Hashable {
     struct Episode: Codable, Hashable {
         let id: Int
@@ -917,7 +907,18 @@ struct BangumiInfo: Codable, Hashable {
         }
     }
 
+    struct UserStatus: Codable, Hashable {
+        struct Progress: Codable, Hashable {
+            let last_time: Int // 最后观看的时间进度 | 单位为秒
+            let last_ep_id: Int
+            let last_ep_index: String // 最后观看的标题
+        }
+
+        let progress: Progress?
+    }
+
     let episodes: [Episode] // 正片剧集列表
+    let user_status: UserStatus?
 }
 
 struct BangumiSeasonView: Codable, Hashable {
