@@ -56,8 +56,8 @@ struct DisplayOverlay {
     }
 
     struct DisplayOverlayBadge {
-        var color: UIColor?
         var text: String
+        var color: UIColor?
     }
 }
 

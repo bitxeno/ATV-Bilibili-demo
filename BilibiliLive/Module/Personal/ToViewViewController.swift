@@ -73,6 +73,7 @@ struct ToViewData: PlayableData, Codable {
     let pubdate: Int
     let duration: Int
     let stat: Stat?
+    let progress: Int // 0:未观看 -1:已看完 正整数:播放时间进度
 
     var durationString: String {
         let formatter = DateComponentsFormatter()
@@ -114,7 +115,7 @@ struct ToViewData: PlayableData, Codable {
             leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "list.bullet.rectangle", text: stat.danmaku == 0 ? "-" : stat.danmaku.numberString()))
         }
         rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: durationString))
-        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
+        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems, badge: progress == -1 ? .init(text: "已看完", color: UIColor.black.withAlphaComponent(0.6)) : nil)
     }
 }
 
