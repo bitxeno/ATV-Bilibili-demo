@@ -343,7 +343,7 @@ extension WebRequest {
         return res.medias ?? []
     }
 
-    static func reportWatchHistory(aid: Int, cid: Int, currentTime: Int, epid: Int? = nil, seasonId: Int? = nil, isBangumi: Bool = false) {
+    static func reportWatchHistory(aid: Int, cid: Int, currentTime: Int, epid: Int? = nil, seasonId: Int? = nil, isBangumi: Bool = false, bangumiType: Int? = nil) {
         var parameters: [String: Any] = [
             "aid": aid,
             "cid": cid,
@@ -353,7 +353,7 @@ extension WebRequest {
         if isBangumi {
             // 番剧类型标识
             parameters["type"] = 4
-            parameters["sub_type"] = 1
+            parameters["sub_type"] = bangumiType ?? 1
 
             // 番剧ID
             if let epid = epid {
@@ -918,10 +918,15 @@ struct BangumiInfo: Codable, Hashable {
         let progress: Progress?
     }
 
+    struct Section: Codable, Hashable {
+        let episodes: [Episode]
+    }
+
     let type: Int
+    let season_id: Int
     let episodes: [Episode] // 正片剧集列表
     let user_status: UserStatus?
-    let section: [BangumiInfo]?
+    let section: [Section]?
 }
 
 enum BangumiType: Int {

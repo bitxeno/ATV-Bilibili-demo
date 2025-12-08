@@ -163,7 +163,7 @@ class VideoDetailViewController: UIViewController {
         } else {
             vc.present(self, animated: false) { [weak self] in
                 guard let self else { return }
-                let player = VideoPlayerViewController(playInfo: PlayInfo(aid: self.aid, cid: self.cid, epid: self.epid, isBangumi: self.isBangumi, last_play_cid: self.last_play_cid, playTimeInSecond: self.last_play_time))
+                let player = VideoPlayerViewController(playInfo: PlayInfo(aid: self.aid, cid: self.cid, epid: self.epid, seasonId: isBangumi ? self.seasonId : nil, isBangumi: self.isBangumi, last_play_cid: self.last_play_cid, playTimeInSecond: self.last_play_time))
                 self.present(player, animated: true)
             }
         }
@@ -218,6 +218,7 @@ class VideoDetailViewController: UIViewController {
                 }
                 pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + "\n" + $0.long_title, badge: $0.badge, badge_type: $0.badge_type) })
                 bangumiType = BangumiType(rawValue: info.type)
+                seasonId = info.season_id
             }
             let data = try await WebRequest.requestDetailVideo(aid: aid)
             self.data = data
@@ -233,6 +234,7 @@ class VideoDetailViewController: UIViewController {
                     last_play_index = epi.title
                 }
                 bangumiType = BangumiType(rawValue: info.type)
+                seasonId = info.season_id
             }
             update(with: data)
         } catch let err {
@@ -322,11 +324,13 @@ class VideoDetailViewController: UIViewController {
         followButton.isOn = data.Card.following
 
         // 更新播放按钮标题
-        if let lastEpIndex = last_play_index {
-            if bangumiType != .movie, pages.count > 1 {
-                playButton.title = "继续 EP\(lastEpIndex)"
-            } else {
+        if let lastEpIndex = last_play_index, last_play_cid == cid {
+            if bangumiType == nil || bangumiType == .movie {
                 playButton.title = "继续播放"
+            } else if let number = Int(lastEpIndex) {
+                playButton.title = "继续 E\(String(format: "%02d", number))"
+            } else {
+                playButton.title = "继续 \(lastEpIndex)"
             }
         } else {
             playButton.title = "播放"
@@ -399,7 +403,7 @@ class VideoDetailViewController: UIViewController {
     }
 
     @IBAction func actionPlay(_ sender: Any) {
-        let player = VideoPlayerViewController(playInfo: PlayInfo(aid: aid, cid: cid, epid: epid, isBangumi: isBangumi, last_play_cid: last_play_cid, playTimeInSecond: last_play_time))
+        let player = VideoPlayerViewController(playInfo: PlayInfo(aid: aid, cid: cid, epid: epid, seasonId: isBangumi ? seasonId : nil, isBangumi: isBangumi, bangumiType: bangumiType, last_play_cid: last_play_cid, playTimeInSecond: last_play_time))
         player.data = data
         if pages.count > 0, let index = pages.firstIndex(where: { $0.cid == cid }) {
             let seq = pages.dropFirst(index).map({ PlayInfo(aid: aid, cid: $0.cid, epid: $0.epid, isBangumi: isBangumi) })
@@ -503,7 +507,7 @@ extension VideoDetailViewController: UICollectionViewDelegate {
         case pageCollectionView:
             let desiredIndex = isPageOrderReversed ? pages.count - indexPath.item - 1 : indexPath.item
             let page = pages[desiredIndex]
-            let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, epid: page.epid, seasonId: isBangumi ? seasonId : nil, isBangumi: isBangumi, last_play_cid: last_play_cid, playTimeInSecond: last_play_time))
+            let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, epid: page.epid, seasonId: isBangumi ? seasonId : nil, isBangumi: isBangumi, bangumiType: bangumiType, last_play_cid: last_play_cid, playTimeInSecond: last_play_time))
             player.data = isBangumi ? nil : data
 
             let seq = pages.dropFirst(desiredIndex).map({ PlayInfo(aid: aid, cid: $0.cid, seasonId: isBangumi ? seasonId : nil, isBangumi: isBangumi) })
