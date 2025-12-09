@@ -9,6 +9,7 @@ import UIKit
 
 class SearchContainerViewController: UIViewController {
     private var searchController: UISearchController!
+    private var searchContainerViewController: UISearchContainerViewController!
     private var resultVC: SearchResultViewController!
 
     override func viewDidLoad() {
@@ -25,16 +26,13 @@ class SearchContainerViewController: UIViewController {
         // 配置搜索栏
         searchController.searchBar.placeholder = "搜索"
 
-        definesPresentationContext = true
+        searchContainerViewController = UISearchContainerViewController(searchController: searchController)
 
         // 在 tvOS 上需要手动将搜索栏添加到视图层次
-        view.addSubview(searchController.searchBar)
-        searchController.searchBar.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            searchController.searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            searchController.searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            searchController.searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-        ])
+        addChild(searchContainerViewController)
+        searchContainerViewController.view.frame = view.bounds
+        view.addSubview(searchContainerViewController.view)
+        searchContainerViewController.didMove(toParent: self)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -46,15 +44,5 @@ class SearchContainerViewController: UIViewController {
                 self?.searchController.isActive = true
             }
         }
-    }
-
-    // MARK: - Focus Management
-
-    override var preferredFocusEnvironments: [UIFocusEnvironment] {
-        // 优先聚焦到搜索栏
-        if let searchBar = searchController.searchBar as UIFocusEnvironment? {
-            return [searchBar]
-        }
-        return super.preferredFocusEnvironments
     }
 }
