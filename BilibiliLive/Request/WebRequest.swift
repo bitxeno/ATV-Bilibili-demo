@@ -271,8 +271,16 @@ enum WebRequest {
 // MARK: - Video
 
 extension WebRequest {
-    static func requestBangumiInfo(epid: Int) async throws -> BangumiInfo {
-        let info: BangumiInfo = try await request(url: "https://api.bilibili.com/pgc/view/web/season", parameters: ["ep_id": epid], dataObj: "result")
+    static func requestBangumiInfo(epid: Int?, seasonID: Int? = nil) async throws -> BangumiInfo {
+        guard epid != nil || seasonID != nil else { throw "epid和seasonID不能同时为空" }
+        var params: Parameters = [:]
+        if let epid {
+            params["ep_id"] = epid
+        }
+        if let seasonID {
+            params["season_id"] = seasonID
+        }
+        let info: BangumiInfo = try await request(url: "https://api.bilibili.com/pgc/view/web/season", parameters: params, dataObj: "result")
         return info
     }
 

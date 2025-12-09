@@ -17,9 +17,6 @@ class BLTextOnlyCollectionViewCell: BLMotionCollectionViewCell {
     private let badgeView = UIView()
     private let badgeLabel = UILabel()
 
-    // Press event handler
-    var onPressEnded: ((UIPress.PressType) -> Void)?
-
     override func setup() {
         super.setup()
         scaleFactor = 1.15
@@ -72,13 +69,5 @@ class BLTextOnlyCollectionViewCell: BLMotionCollectionViewCell {
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         super.didUpdateFocus(in: context, with: coordinator)
         selectedWhiteView.isHidden = !isFocused
-    }
-
-    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        super.pressesEnded(presses, with: event)
-
-        if let press = presses.first {
-            onPressEnded?(press.type)
-        }
     }
 }

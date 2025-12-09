@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder.AppleTV.Storyboard" version="3.0" toolsVersion="23504" targetRuntime="AppleTV" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder.AppleTV.Storyboard" version="3.0" toolsVersion="23727" targetRuntime="AppleTV" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="appleTV" appearance="dark"/>
     <dependencies>
         <deployment identifier="tvOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="TVUIKit controls" minToolsVersion="10.2"/>
@@ -66,8 +66,8 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1 请打开BiliBili官方手机客户端扫码登录  2. 如果登录失败尝试点击重新生成二维码" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C1r-RI-xZ8">
-                                <rect key="frame" x="1061" y="321" width="671" height="138"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1 请打开BiliBili官方手机客户端扫码登录2. 如果登录失败尝试点击重新生成二维码" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C1r-RI-xZ8">
+                                <rect key="frame" x="1061" y="321" width="1332" height="46"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -549,24 +549,24 @@
                                                                     <nil key="textColor"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
-                                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pageSortButton" customClass="BLCustomButton" customModule="BilibiliLive" customModuleProvider="target">
-                                                                    <rect key="frame" x="300" y="45" width="50" height="50"/>
+                                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="episodeListButton" customClass="BLCustomButton" customModule="BilibiliLive" customModuleProvider="target">
+                                                                    <rect key="frame" x="285" y="44" width="50" height="50"/>
                                                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     <color key="tintColor" name="titleColor"/>
                                                                     <constraints>
-                                                                        <constraint firstAttribute="width" constant="50" id="sortBtn-width"/>
-                                                                        <constraint firstAttribute="height" constant="50" id="sortBtn-height"/>
+                                                                        <constraint firstAttribute="height" constant="50" id="episodeListButton-height"/>
+                                                                        <constraint firstAttribute="width" constant="50" id="episodeListButton-width"/>
                                                                     </constraints>
                                                                     <userDefinedRuntimeAttributes>
-                                                                        <userDefinedRuntimeAttribute type="image" keyPath="image" value="arrow.up" catalog="system"/>
-                                                                        <userDefinedRuntimeAttribute type="image" keyPath="onImage" value="arrow.down" catalog="system"/>
+                                                                        <userDefinedRuntimeAttribute type="image" keyPath="image" value="chevron.right" catalog="system"/>
+                                                                        <userDefinedRuntimeAttribute type="image" keyPath="onImage" value="chevron.right" catalog="system"/>
                                                                         <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
                                                                             <real key="value" value="25"/>
                                                                         </userDefinedRuntimeAttribute>
                                                                         <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
                                                                     </userDefinedRuntimeAttributes>
                                                                     <connections>
-                                                                        <action selector="actionTogglePageSort:" destination="Q5X-tf-Ysh" eventType="primaryActionTriggered" id="sortBtn-action"/>
+                                                                        <action selector="actionOpenEpisodeList:" destination="Q5X-tf-Ysh" eventType="primaryActionTriggered" id="episodeListButton-action"/>
                                                                     </connections>
                                                                 </view>
                                                             </subviews>
@@ -578,8 +578,8 @@
                                                                 <constraint firstAttribute="bottom" secondItem="qLh-0S-AdH" secondAttribute="bottom" constant="20" id="OSO-8a-fel"/>
                                                                 <constraint firstItem="ktx-5B-HwA" firstAttribute="leading" secondItem="JAA-Xe-yWz" secondAttribute="leadingMargin" id="fkV-wo-z16"/>
                                                                 <constraint firstItem="ktx-5B-HwA" firstAttribute="top" secondItem="JAA-Xe-yWz" secondAttribute="top" constant="40" id="nyX-Wx-GEc"/>
-                                                                <constraint firstItem="pageSortButton" firstAttribute="leading" secondItem="ktx-5B-HwA" secondAttribute="trailing" constant="15" id="sortBtn-leading"/>
-                                                                <constraint firstItem="pageSortButton" firstAttribute="centerY" secondItem="ktx-5B-HwA" secondAttribute="centerY" id="sortBtn-centerY"/>
+                                                                <constraint firstItem="episodeListButton" firstAttribute="centerY" secondItem="ktx-5B-HwA" secondAttribute="centerY" id="episodeListButton-centerY"/>
+                                                                <constraint firstItem="episodeListButton" firstAttribute="leading" secondItem="ktx-5B-HwA" secondAttribute="trailing" constant="15" id="episodeListButton-leading"/>
                                                             </constraints>
                                                         </view>
                                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FMV-cw-gB4" userLabel="Ugc Collection">
@@ -822,6 +822,7 @@
                         <outlet property="moreButton" destination="Efg-f4-str" id="3iU-2Q-SZS"/>
                         <outlet property="durationLabel" destination="ymk-p2-UgZ" id="bJX-8D-fcZ"/>
                         <outlet property="effectContainerView" destination="akE-tZ-Y1L" id="fRI-xN-KfU"/>
+                        <outlet property="episodeListButton" destination="episodeListButton" id="episodeListButton-outlet"/>
                         <outlet property="favButton" destination="fxL-C9-Fqb" id="X9x-nb-2hH"/>
                         <outlet property="followButton" destination="dxc-AZ-B22" id="VsO-4g-Xgv"/>
                         <outlet property="followersLabel" destination="C7k-hT-tuS" id="k2m-de-CfR"/>
@@ -852,6 +853,7 @@
     <resources>
         <image name="bitcoinsign.circle" catalog="system" width="128" height="128"/>
         <image name="bitcoinsign.circle.fill" catalog="system" width="128" height="128"/>
+        <image name="chevron.right" catalog="system" width="97" height="128"/>
         <image name="clock.fill" catalog="system" width="128" height="128"/>
         <image name="hand.thumbsdown" catalog="system" width="115" height="128"/>
         <image name="hand.thumbsdown.fill" catalog="system" width="128" height="115"/>

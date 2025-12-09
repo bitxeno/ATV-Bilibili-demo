@@ -31,6 +31,7 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var coinButton: BLCustomButton!
     @IBOutlet var noteView: NoteDetailView!
     @IBOutlet var moreButton: BLCustomButton!
+    @IBOutlet var episodeListButton: BLCustomButton!
 
     @IBOutlet var actionButtonSpaceView: UIView!
     @IBOutlet var durationLabel: UILabel!
@@ -42,7 +43,6 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var avatarImageView: UIImageView!
     @IBOutlet var favButton: BLCustomButton!
     @IBOutlet var pageCollectionView: UICollectionView!
-    @IBOutlet var pageSortButton: BLCustomButton!
     @IBOutlet var recommandCollectionView: UICollectionView!
     @IBOutlet var replysCollectionView: UICollectionView!
     @IBOutlet var repliesCollectionViewHeightConstraints: NSLayoutConstraint!
@@ -61,6 +61,7 @@ class VideoDetailViewController: UIViewController {
     private var playTimeInSecond: Int?
     private var subType: Int?
     private var data: VideoDetail?
+    private var last_ep_index: String?
     @IBOutlet var scrollView: UIScrollView!
     private var didSentCoins = 0 {
         didSet {
@@ -376,6 +377,9 @@ class VideoDetailViewController: UIViewController {
                 cid = pages.first?.cid ?? 0
             }
         }
+
+        // 只有当分集数量大于20时才显示剧集列表按钮
+        episodeListButton.isHidden = pages.count <= 20
         loadingView.stopAnimating()
         loadingView.removeFromSuperview()
         effectContainerView.isHidden = false
@@ -418,7 +422,7 @@ class VideoDetailViewController: UIViewController {
     }
 
     @IBAction func actionPlay(_ sender: Any) {
-        let player = VideoPlayerViewController(playInfo: PlayInfo(aid: aid, cid: cid, epid: epid, seasonId: seasonId, subType: subType, lastPlayCid: lastPlayCid, playTimeInSecond: playTimeInSecond, title: data?.title))
+        let player = VideoPlayerViewController(playInfo: PlayInfo(aid: aid, cid: cid, epid: epid, seasonId: seasonId, subType: subType, title: data?.title, lastPlayCid: lastPlayCid, playTimeInSecond: playTimeInSecond))
         player.data = data
         if pages.count > 1, let index = pages.firstIndex(where: { $0.cid == cid }) {
             let seq = pages.dropFirst(index).map({ PlayInfo(aid: aid, cid: $0.cid, epid: $0.epid, seasonId: seasonId, subType: subType, title: $0.part) })
@@ -537,10 +541,28 @@ class VideoDetailViewController: UIViewController {
         }
     }
 
-    @IBAction func actionTogglePageSort(_ sender: Any) {
-        isPageOrderReversed.toggle()
-        pageCollectionView.reloadData()
-        pageSortButton.isOn = isPageOrderReversed
+    @IBAction func actionOpenEpisodeList(_ sender: Any) {
+        let episodeListVC = EpisodeListViewController()
+        episodeListVC.pages = pages.reversed()
+        episodeListVC.currentCid = cid
+        episodeListVC.modalPresentationStyle = .blurOverFullScreen
+        episodeListVC.onSelectEpisode = { [weak self] page in
+            guard let self = self else { return }
+            self.cid = page.cid
+            let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, epid: page.epid, seasonId: self.seasonId, subType: self.subType, title: page.part, lastPlayCid: self.lastPlayCid, playTimeInSecond: self.playTimeInSecond))
+            player.data = isBangumi ? nil : data
+
+            // 设置连续播放
+            if let index = self.pages.firstIndex(where: { $0.cid == page.cid }) {
+                let seq = self.pages.dropFirst(index).map({ PlayInfo(aid: self.isBangumi ? $0.page : self.aid, cid: $0.cid, epid: $0.epid, seasonId: self.seasonId, subType: self.subType, title: $0.part) })
+                if seq.count > 0 {
+                    let nextProvider = VideoNextProvider(seq: seq)
+                    player.nextProvider = nextProvider
+                }
+            }
+            self.present(player, animated: true, completion: nil)
+        }
+        present(episodeListVC, animated: true)
     }
 }
 
@@ -549,7 +571,7 @@ extension VideoDetailViewController: UICollectionViewDelegate {
         switch collectionView {
         case pageCollectionView:
             let page = pages[indexPath.item]
-            let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, epid: page.epid, seasonId: seasonId, subType: subType, lastPlayCid: lastPlayCid, playTimeInSecond: playTimeInSecond, title: page.part))
+            let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, epid: page.epid, seasonId: seasonId, subType: subType, title: page.part, lastPlayCid: lastPlayCid, playTimeInSecond: playTimeInSecond))
             player.data = isBangumi ? nil : data
 
             let seq = pages.dropFirst(indexPath.item).map({ PlayInfo(aid: isBangumi ? $0.page : aid, cid: $0.cid, epid: $0.epid, seasonId: seasonId, subType: subType, title: $0.part) })
@@ -612,14 +634,6 @@ extension VideoDetailViewController: UICollectionViewDataSource {
             let desiredIndex = isPageOrderReversed ? pages.count - indexPath.item - 1 : indexPath.item
             let page = pages[desiredIndex]
             cell.titleLabel.text = page.part
-            cell.onPressEnded = { [weak self] pressType in
-                guard let self else { return }
-                if pressType == .playPause {
-                    self.isPageOrderReversed.toggle()
-                    self.pageCollectionView.reloadData()
-                    self.pageSortButton.isOn = self.isPageOrderReversed
-                }
-            }
             cell.configureBadge(text: page.badge, backgroundColor: page.badgeBackgroundColor)
             return cell
         case replysCollectionView:
@@ -883,5 +897,73 @@ class ContentDetailViewController: UIViewController {
             make.trailing.equalToSuperview().inset(60)
             make.bottom.equalToSuperview().inset(80)
         }
+    }
+}
+
+class EpisodeListViewController: UIViewController {
+    private let collectionView: UICollectionView
+    var pages = [VideoPage]()
+    var currentCid: Int = 0
+    var onSelectEpisode: ((VideoPage) -> Void)?
+
+    init() {
+        // 瀑布流布局
+        let layout = UICollectionViewCompositionalLayout { _, _ in
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.1667),
+                                                  heightDimension: .fractionalHeight(1.0))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(96))
+            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+            group.interItemSpacing = .fixed(40)
+            let section = NSCollectionLayoutSection(group: group)
+            section.interGroupSpacing = 40
+            section.contentInsets = NSDirectionalEdgeInsets(top: 40, leading: 60, bottom: 40, trailing: 60)
+            return section
+        }
+        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        view.addSubview(collectionView)
+        collectionView.backgroundColor = .clear
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        collectionView.register(BLTextOnlyCollectionViewCell.self, forCellWithReuseIdentifier: "BLTextOnlyCollectionViewCell")
+        collectionView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        collectionView.remembersLastFocusedIndexPath = true
+    }
+}
+
+extension EpisodeListViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let page = pages[indexPath.item]
+        dismiss(animated: true) { [weak self] in
+            self?.onSelectEpisode?(page)
+        }
+    }
+}
+
+extension EpisodeListViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return pages.count
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BLTextOnlyCollectionViewCell", for: indexPath) as! BLTextOnlyCollectionViewCell
+        let page = pages[indexPath.item]
+        cell.titleLabel.text = page.part
+        cell.configureBadge(text: page.badge, backgroundColor: page.badgeBackgroundColor)
+
+        return cell
     }
 }
