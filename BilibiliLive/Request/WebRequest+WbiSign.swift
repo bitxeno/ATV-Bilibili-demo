@@ -47,13 +47,14 @@ extension WebRequest {
         class WebIdCache {
             var webId: String?
             var lastUpdate: Date?
+            var ttl: Double = 3600
 
             static let shared = WebIdCache()
         }
 
         func getWebId(completion: @escaping (String?) -> Void) {
             if let cached = WebIdCache.shared.webId, let lastUpdate = WebIdCache.shared.lastUpdate,
-               Date().timeIntervalSince(lastUpdate) < 60 * 60
+               Date().timeIntervalSince(lastUpdate) < WebIdCache.shared.ttl
             {
                 completion(cached)
                 return
@@ -97,6 +98,10 @@ extension WebRequest {
                         let accessId = String(html[range])
                         WebIdCache.shared.webId = accessId
                         WebIdCache.shared.lastUpdate = Date()
+                        if let payload = accessId.decodeJWT(), let createdAt = payload["created_at"] as? TimeInterval, let ttl = payload["ttl"] as? Double {
+                            WebIdCache.shared.lastUpdate = Date(timeIntervalSince1970: createdAt)
+                            WebIdCache.shared.ttl = ttl
+                        }
                         completion(accessId)
                         return
                     }

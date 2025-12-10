@@ -28,4 +28,32 @@ extension String {
     func removingHTMLTags() -> String {
         return replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil)
     }
+
+    func decodeJWT() -> [String: Any]? {
+        let segments = components(separatedBy: ".")
+        guard segments.count > 1 else { return nil }
+
+        let jwtPart = segments[1]
+        guard let bodyData = base64UrlDecode(jwtPart),
+              let json = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any]
+        else {
+            return nil
+        }
+        return json
+    }
+
+    private func base64UrlDecode(_ value: String) -> Data? {
+        var base64 = value
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+
+        let length = Double(base64.lengthOfBytes(using: .utf8))
+        let requiredLength = 4 * ceil(length / 4.0)
+        let paddingLength = requiredLength - length
+        if paddingLength > 0 {
+            let padding = "".padding(toLength: Int(paddingLength), withPad: "=", startingAt: 0)
+            base64 += padding
+        }
+        return Data(base64Encoded: base64)
+    }
 }
