@@ -30,6 +30,8 @@ class SearchResultViewController: UIViewController {
     private let suggestDelayWork = DelayWork(delay: 1.0)
     private var showHistorySuggest = false
     private var isShowingDefaultContent = false
+    // 用于防止并发执行 showDefaultContent()
+    private var isShowingDefaultContentInProgress = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -117,8 +119,14 @@ class SearchResultViewController: UIViewController {
 
     @MainActor
     private func showDefaultContent() async {
+        // 防止并发调用导致的重入问题
+        guard !isShowingDefaultContentInProgress else { return }
+        isShowingDefaultContentInProgress = true
+        defer { isShowingDefaultContentInProgress = false }
+
         isShowingDefaultContent = true
         currentSnapshot.deleteAllItems()
+        await dataSource.apply(currentSnapshot)
 
         let defaultHeight = NSCollectionLayoutDimension.fractionalWidth(Settings.displayStyle == .large ? 0.26 : 0.2)
 

@@ -34,6 +34,7 @@ class CategoryViewController: UIViewController, BLTabBarContentVCProtocol {
             return
         }
         typeCollectionView = UICollectionView(frame: .zero, collectionViewLayout: BLSettingLineCollectionViewCell.makeLayout())
+        typeCollectionView.remembersLastFocusedIndexPath = true
         typeCollectionView.register(BLSettingLineCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
         view.addSubview(typeCollectionView)
         typeCollectionView.snp.makeConstraints { make in
