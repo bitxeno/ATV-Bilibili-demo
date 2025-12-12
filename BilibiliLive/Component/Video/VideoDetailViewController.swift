@@ -236,6 +236,19 @@ class VideoDetailViewController: UIViewController {
                 bangumiType = BangumiType(rawValue: info.type)
                 seasonId = info.season_id
             }
+            if !isBangumi, let page = cid == 0 ? data.View.pages?.first : data.View.pages?.first(where: { $0.cid == cid }) {
+                let playInfo = try await WebRequest.requestPlayerInfo(aid: aid, cid: page.cid)
+                if playInfo.last_play_cid == page.cid {
+                    last_play_time = playInfo.last_play_time / 1000
+                    last_play_cid = playInfo.last_play_cid
+                    last_play_index = "P\(page.page)"
+                } else if cid == 0, let lastPage = data.View.pages?.first(where: { $0.cid == playInfo.last_play_cid }) {
+                    cid = lastPage.cid
+                    last_play_time = playInfo.last_play_time / 1000
+                    last_play_cid = playInfo.last_play_cid
+                    last_play_index = "P\(lastPage.page)"
+                }
+            }
             update(with: data)
         } catch let err {
             if case let .statusFail(code, _) = err as? RequestError, code == -404 {
@@ -325,7 +338,7 @@ class VideoDetailViewController: UIViewController {
 
         // 更新播放按钮标题
         if let lastEpIndex = last_play_index, last_play_cid == cid {
-            if bangumiType == nil || bangumiType == .movie {
+            if data.View.pages?.count ?? 0 <= 1 || bangumiType == .movie {
                 playButton.title = "继续播放"
             } else if let number = Int(lastEpIndex) {
                 playButton.title = "继续 E\(String(format: "%02d", number))"

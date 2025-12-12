@@ -600,6 +600,7 @@ extension WebRequest {
 struct HistoryData: DisplayData, Codable {
     struct HistoryPage: Codable, Hashable {
         let cid: Int
+        let duration: Int
     }
 
     let pic: URL?
@@ -611,6 +612,7 @@ struct HistoryData: DisplayData, Codable {
     let duration: Int
     let view_at: Int
     let stat: Stat?
+    let page: HistoryPage?
     //    let bangumi: BangumiData?
 
     // displayData
@@ -630,7 +632,7 @@ struct HistoryData: DisplayData, Codable {
     var overlay: DisplayOverlay? {
         var leftItems = [DisplayOverlay.DisplayOverlayItem]()
         var rightItems = [DisplayOverlay.DisplayOverlayItem]()
-        rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: "\(TimeInterval(progress).timeString())/\(TimeInterval(duration).timeString())"))
+        rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: "\(TimeInterval(progress).timeString())/\(TimeInterval(page?.duration ?? duration).timeString())"))
         return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
     }
 

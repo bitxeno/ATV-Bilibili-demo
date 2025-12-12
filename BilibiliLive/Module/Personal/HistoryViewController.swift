@@ -22,7 +22,7 @@ class HistoryViewController: UIViewController {
     }
 
     func goDetail(with history: HistoryData) {
-        let detailVC = VideoDetailViewController.create(aid: history.aid, cid: history.cid ?? 0)
+        let detailVC = VideoDetailViewController.create(aid: history.aid, cid: history.page?.cid ?? history.cid ?? 0)
         detailVC.present(from: self)
     }
 
