@@ -46,16 +46,12 @@ extension WebRequest {
         // WebId Cache
         class WebIdCache {
             var webId: String?
-            var lastUpdate: Date?
-            var ttl: Double = 3600
 
             static let shared = WebIdCache()
         }
 
-        func getWebId(completion: @escaping (String?) -> Void) {
-            if let cached = WebIdCache.shared.webId, let lastUpdate = WebIdCache.shared.lastUpdate,
-               Date().timeIntervalSince(lastUpdate) < WebIdCache.shared.ttl
-            {
+        func getWebId(needRefresh: Bool, completion: @escaping (String?) -> Void) {
+            if let cached = WebIdCache.shared.webId, !needRefresh {
                 completion(cached)
                 return
             }
@@ -97,11 +93,6 @@ extension WebRequest {
                     {
                         let accessId = String(html[range])
                         WebIdCache.shared.webId = accessId
-                        WebIdCache.shared.lastUpdate = Date()
-                        if let payload = accessId.decodeJWT(), let createdAt = payload["created_at"] as? TimeInterval, let ttl = payload["ttl"] as? Double {
-                            WebIdCache.shared.lastUpdate = Date(timeIntervalSince1970: createdAt)
-                            WebIdCache.shared.ttl = ttl
-                        }
                         completion(accessId)
                         return
                     }
@@ -144,7 +135,7 @@ extension WebRequest {
             return params
         }
 
-        func getWbiKeys(completion: @escaping (Result<(imgKey: String, subKey: String), Error>) -> Void) {
+        func getWbiKeys(completion: @escaping (Result<(imgKey: String, subKey: String, hitCache: Bool), Error>) -> Void) {
             class Cache {
                 var imgKey: String?
                 var subKey: String?
@@ -156,10 +147,10 @@ extension WebRequest {
             if let imgKey = Cache.shared.imgKey,
                let subKey = Cache.shared.subKey,
                let lastUpdate = Cache.shared.lastUpdate,
-               Date().timeIntervalSince(lastUpdate) < 60 * 60 * 12,
+               Date().timeIntervalSince(lastUpdate) < 60 * 60,
                Calendar.current.isDate(Date(), inSameDayAs: lastUpdate)
             {
-                completion(.success((imgKey, subKey)))
+                completion(.success((imgKey, subKey, true)))
                 return
             }
 
@@ -179,7 +170,7 @@ extension WebRequest {
                     Cache.shared.imgKey = imgKey
                     Cache.shared.subKey = subKey
                     Cache.shared.lastUpdate = Date()
-                    completion(.success((imgKey, subKey)))
+                    completion(.success((imgKey, subKey, false)))
                 case let .failure(error):
                     completion(.failure(error))
                 }
@@ -196,7 +187,7 @@ extension WebRequest {
         getWbiKeys { result in
             switch result {
             case let .success(keys):
-                getWebId { webId in
+                getWebId(needRefresh: !keys.hitCache) { webId in
                     let spdParam = param.components(separatedBy: "&")
                     var spdDicParam = [String: String]()
                     for pair in spdParam {

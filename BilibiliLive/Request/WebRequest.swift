@@ -103,6 +103,9 @@ enum WebRequest {
                                 encoding: URLEncoding.default,
                                 headers: afheaders)
                     .responseData(completionHandler: completionHandler)
+                    .cURLDescription { description in
+                        Logger.info("\(description)")
+                    }
             } else {
                 session.request(url,
                                 method: method,
@@ -110,6 +113,9 @@ enum WebRequest {
                                 encoding: URLEncoding.default,
                                 headers: afheaders)
                     .responseData(completionHandler: completionHandler)
+                    .cURLDescription { description in
+                        Logger.info("\(description)")
+                    }
             }
         }
     }
