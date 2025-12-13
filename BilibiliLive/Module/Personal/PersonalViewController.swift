@@ -69,6 +69,10 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
         //     let controller = FollowBangumiViewController()
         //     self?.present(controller, animated: true)
         // }))
+        cellModels.append(CellModel(title: "我的收藏", autoSelect: false, action: { [weak self] in
+            let controller = FavoriteViewController()
+            self?.present(controller, animated: true)
+        }))
         cellModels.append(CellModel(title: "关注UP", contentVC: FollowUpsViewController()))
         cellModels.append(CellModel(title: "稍后再看", contentVC: ToViewViewController()))
         cellModels.append(CellModel(title: "历史记录", contentVC: HistoryViewController()))

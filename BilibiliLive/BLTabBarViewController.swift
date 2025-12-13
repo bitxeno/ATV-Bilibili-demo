@@ -27,10 +27,6 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         delegate = self
         var vcs = [UIViewController]()
 
-        let liveVC = LiveViewController()
-        liveVC.tabBarItem.title = "直播"
-        vcs.append(liveVC)
-
         let feedVC = FeedViewController()
         feedVC.tabBarItem.title = "推荐"
         vcs.append(feedVC)
@@ -50,6 +46,10 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         let fav = FollowBangumiViewController()
         fav.tabBarItem.title = "番剧"
         vcs.append(fav)
+
+        let liveVC = LiveViewController()
+        liveVC.tabBarItem.title = "直播"
+        vcs.append(liveVC)
 
         let followVC = FollowsViewController()
         followVC.tabBarItem.title = "动态"
