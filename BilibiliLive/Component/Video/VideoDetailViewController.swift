@@ -663,10 +663,12 @@ extension VideoDetailViewController {
 class RelatedVideoCell: BLMotionCollectionViewCell {
     let titleLabel = MarqueeLabel()
     let imageView = UIImageView()
+    private let overlayView = BLOverlayView()
     override func setup() {
         super.setup()
         contentView.addSubview(imageView)
         contentView.addSubview(titleLabel)
+        contentView.addSubview(overlayView)
         imageView.snp.makeConstraints { make in
             make.top.left.right.equalToSuperview()
             make.width.equalTo(imageView.snp.height).multipliedBy(14.0 / 9)
@@ -681,12 +683,26 @@ class RelatedVideoCell: BLMotionCollectionViewCell {
         titleLabel.setContentHuggingPriority(.required, for: .vertical)
         titleLabel.font = UIFont.systemFont(ofSize: 28)
         titleLabel.fadeLength = 60
+        overlayView.snp.makeConstraints { make in
+            make.leading.equalTo(imageView.snp.leading)
+            make.trailing.equalTo(imageView.snp.trailing)
+            make.bottom.equalTo(imageView.snp.bottom)
+            make.top.equalTo(imageView.snp.top)
+        }
+        overlayView.layer.cornerRadius = imageView.layer.cornerRadius
+        overlayView.clipsToBounds = true
         stopScroll()
     }
 
     func update(data: any DisplayData) {
         titleLabel.text = data.title
         imageView.kf.setImage(with: data.pic, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 360, height: 202))), .cacheOriginalImage])
+        if let overlay = data.overlay {
+            overlayView.isHidden = false
+            overlayView.configure(overlay)
+        } else {
+            overlayView.isHidden = true
+        }
     }
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {

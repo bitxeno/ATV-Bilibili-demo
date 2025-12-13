@@ -136,6 +136,7 @@ enum WebRequest {
                 if errorCode != 0 {
                     let message = json["message"].stringValue
                     print(errorCode, message)
+                    Logger.info("\(json.stringValue)")
                     complete?(.failure(.statusFail(code: errorCode, message: message)))
                     return
                 }
