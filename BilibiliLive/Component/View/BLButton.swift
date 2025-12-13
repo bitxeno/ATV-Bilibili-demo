@@ -5,6 +5,7 @@
 //  Created by yicheng on 2022/10/22.
 //
 
+import MarqueeLabel
 import SnapKit
 import TVUIKit
 
@@ -43,7 +44,7 @@ class BLCustomButton: BLButton {
         }
     }
 
-    private let titleLabel = UILabel()
+    private let titleLabel = MarqueeLabel()
     private let imageView = UIImageView()
 
     override func setup() {
@@ -58,8 +59,15 @@ class BLCustomButton: BLButton {
         imageView.image = image
         addSubview(titleLabel)
         titleLabel.textAlignment = .center
+        titleLabel.numberOfLines = 1
         titleLabel.font = titleFont
         titleLabel.textColor = titleColor
+        titleLabel.fadeLength = 30
+        titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+        titleLabel.setContentHuggingPriority(.required, for: .vertical)
+        // 默认不滚动，只有在获得焦点时才启动
+        titleLabel.shutdownLabel()
+        titleLabel.holdScrolling = true
         updateTitleLabel(force: true)
     }
 
@@ -96,13 +104,20 @@ class BLCustomButton: BLButton {
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         super.didUpdateFocus(in: context, with: coordinator)
         updateButton()
+        if isFocused {
+            titleLabel.restartLabel()
+            titleLabel.holdScrolling = false
+        } else {
+            titleLabel.shutdownLabel()
+            titleLabel.holdScrolling = true
+        }
     }
 }
 
 @IBDesignable
 @MainActor
 class BLCustomTextButton: BLButton {
-    private let titleLabel = UILabel()
+    private let titleLabel = MarqueeLabel()
     var object: Any?
 
     @IBInspectable var title: String? {
@@ -131,13 +146,26 @@ class BLCustomTextButton: BLButton {
         }
         titleLabel.text = title
         titleLabel.font = titleFont
+        titleLabel.numberOfLines = 1
         titleLabel.textColor = isFocused ? titleSelectedColor : titleColor
+        titleLabel.fadeLength = 30
         titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+        titleLabel.setContentHuggingPriority(.required, for: .vertical)
+        // 默认不滚动，获得焦点时再启动
+        titleLabel.shutdownLabel()
+        titleLabel.holdScrolling = true
     }
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         super.didUpdateFocus(in: context, with: coordinator)
         titleLabel.textColor = isFocused ? titleSelectedColor : titleColor
+        if isFocused {
+            titleLabel.restartLabel()
+            titleLabel.holdScrolling = false
+        } else {
+            titleLabel.shutdownLabel()
+            titleLabel.holdScrolling = true
+        }
     }
 }
 

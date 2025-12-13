@@ -140,7 +140,9 @@ enum WebRequest {
                     return
                 }
                 let dataj = json[dataObj]
-                print("\(url) response: \(json)")
+                #if DEBUG
+                    print("\(url) response: \(json)")
+                #endif
                 complete?(.success(dataj))
             case let .failure(err):
                 complete?(.failure(err))

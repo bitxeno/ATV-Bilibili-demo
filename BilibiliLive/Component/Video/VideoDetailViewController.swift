@@ -197,7 +197,7 @@ class VideoDetailViewController: UIViewController {
                     if let progress = info.user_status?.progress, progress.last_ep_id == epi.id {
                         last_play_time = progress.last_time
                         last_play_cid = epi.cid
-                        last_play_index = epi.title
+                        last_play_index = epi.title + " " + epi.long_title
                     }
                 }
                 pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + "\n" + $0.long_title, badge: $0.badge, badge_type: $0.badge_type) })
@@ -211,7 +211,7 @@ class VideoDetailViewController: UIViewController {
                     if let progress = info.user_status?.progress, progress.last_ep_id == epi.id {
                         last_play_time = progress.last_time
                         last_play_cid = epi.cid
-                        last_play_index = epi.title
+                        last_play_index = epi.title + " " + epi.long_title
                     }
                 } else {
                     throw NSError(domain: "get epi fail", code: -1)
@@ -231,22 +231,20 @@ class VideoDetailViewController: UIViewController {
                 if let epi = info.episodes.first(where: { $0.id == epid }), let progress = info.user_status?.progress, progress.last_ep_id == epi.id {
                     last_play_time = progress.last_time
                     last_play_cid = epi.cid
-                    last_play_index = epi.title
+                    last_play_index = epi.title + " " + epi.long_title
                 }
                 bangumiType = BangumiType(rawValue: info.type)
                 seasonId = info.season_id
             }
-            if !isBangumi, let page = cid == 0 ? data.View.pages?.first : data.View.pages?.first(where: { $0.cid == cid }) {
-                let playInfo = try await WebRequest.requestPlayerInfo(aid: aid, cid: page.cid)
-                if playInfo.last_play_cid == page.cid {
-                    last_play_time = playInfo.last_play_time / 1000
+            if !isBangumi, cid == 0, let page = data.View.pages?.first {
+                cid = page.cid
+            }
+            if !isBangumi, cid > 0, let page = data.View.pages?.first(where: { $0.cid == cid }) {
+                let playInfo = try await WebRequest.requestPlayerInfo(aid: aid, cid: cid)
+                if playInfo.last_play_cid == cid {
+                    last_play_time = playInfo.playTimeInSecond
                     last_play_cid = playInfo.last_play_cid
-                    last_play_index = "P\(page.page)"
-                } else if cid == 0, let lastPage = data.View.pages?.first(where: { $0.cid == playInfo.last_play_cid }) {
-                    cid = lastPage.cid
-                    last_play_time = playInfo.last_play_time / 1000
-                    last_play_cid = playInfo.last_play_cid
-                    last_play_index = "P\(lastPage.page)"
+                    last_play_index = page.part
                 }
             }
             update(with: data)
@@ -337,16 +335,17 @@ class VideoDetailViewController: UIViewController {
         followButton.isOn = data.Card.following
 
         // 更新播放按钮标题
-        if let lastEpIndex = last_play_index, last_play_cid == cid {
-            if data.View.pages?.count ?? 0 <= 1 || bangumiType == .movie {
-                playButton.title = "继续播放"
-            } else if let number = Int(lastEpIndex) {
-                playButton.title = "继续 E\(String(format: "%02d", number))"
+        if Settings.continuePlay {
+            if let last_play_cid, last_play_cid == cid {
+                let pageCount = isBangumi ? pages.count : (data.View.pages?.count ?? 0)
+                if let last_play_index, pageCount > 1 {
+                    playButton.title = "继续 \(last_play_index)"
+                } else {
+                    playButton.title = "继续播放"
+                }
             } else {
-                playButton.title = "继续 \(lastEpIndex)"
+                playButton.title = "播放"
             }
-        } else {
-            playButton.title = "播放"
         }
 
         avatarImageView.kf.setImage(with: data.avatar, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
