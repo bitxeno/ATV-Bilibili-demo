@@ -13,6 +13,14 @@ class ReplyCell: UICollectionViewCell {
     @IBOutlet var avatarImageView: UIImageView!
     @IBOutlet var userNameLabel: UILabel!
     @IBOutlet var contenLabel: UILabel!
+    @IBOutlet var moreLabel: UILabel!
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        moreLabel.font = .preferredFont(forTextStyle: .caption2)
+        moreLabel.textColor = .secondaryLabel
+        moreLabel.numberOfLines = 1
+    }
 
     func config(replay: Replys.Reply) {
         avatarImageView.kf.setImage(
@@ -29,5 +37,15 @@ class ReplyCell: UICollectionViewCell {
         } else {
             contenLabel.text = replay.content.message
         }
+
+        // 设置底部的回复数和发布时间，优先使用 reply_control 中的描述字段
+        var parts = [String]()
+        if let subText = replay.reply_control?.sub_reply_entry_text, !subText.isEmpty {
+            parts.append(subText)
+        }
+        if let timeDesc = replay.reply_control?.time_desc, !timeDesc.isEmpty {
+            parts.append(timeDesc)
+        }
+        moreLabel.text = parts.joined(separator: " · ")
     }
 }

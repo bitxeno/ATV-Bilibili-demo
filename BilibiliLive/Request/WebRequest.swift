@@ -878,9 +878,15 @@ struct Replys: Codable, Hashable {
             }
         }
 
+        struct ReplyControl: Codable, Hashable {
+            let sub_reply_entry_text: String?
+            let time_desc: String?
+        }
+
         let member: Member
         let content: Content
         let replies: [Reply]?
+        let reply_control: ReplyControl?
     }
 
     let replies: [Reply]?

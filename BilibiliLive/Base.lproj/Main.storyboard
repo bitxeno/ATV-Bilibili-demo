@@ -706,13 +706,22 @@
                                                                                                     <nil key="textColor"/>
                                                                                                     <nil key="highlightedColor"/>
                                                                                                 </label>
+                                                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="1" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mL2-xx-001">
+                                                                                                    <rect key="frame" x="78" y="320" width="200" height="20"/>
+                                                                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
+                                                                                                    <nil key="textColor"/>
+                                                                                                    <nil key="highlightedColor"/>
+                                                                                                </label>
                                                                                             </subviews>
                                                                                             <constraints>
                                                                                                 <constraint firstItem="c5f-zo-l44" firstAttribute="leading" secondItem="hNw-Tw-oWu" secondAttribute="trailing" constant="8" symbolic="YES" id="4R1-L0-qek"/>
                                                                                                 <constraint firstAttribute="trailing" secondItem="Gue-kM-Tul" secondAttribute="trailing" constant="20" id="63T-NI-HW7"/>
+                                                                                                        <constraint firstItem="mL2-xx-001" firstAttribute="trailing" secondItem="W7y-m5-Uda" secondAttribute="trailing" constant="-20" id="mL2-trailing-to-content"/>
+                                                                                                        <constraint firstItem="mL2-xx-001" firstAttribute="top" secondItem="Gue-kM-Tul" secondAttribute="bottom" constant="6" id="mL2-top-001"/>
+                                                                                                        <constraint firstItem="mL2-xx-001" firstAttribute="bottom" secondItem="W7y-m5-Uda" secondAttribute="bottom" constant="-20" id="mL2-bottom-001"/>
                                                                                                 <constraint firstItem="hNw-Tw-oWu" firstAttribute="leading" secondItem="W7y-m5-Uda" secondAttribute="leading" constant="20" id="8Mw-R9-8IZ"/>
                                                                                                 <constraint firstItem="hNw-Tw-oWu" firstAttribute="top" secondItem="W7y-m5-Uda" secondAttribute="top" constant="20" id="9B8-BS-MHC"/>
-                                                                                                <constraint firstAttribute="bottom" secondItem="Gue-kM-Tul" secondAttribute="bottom" id="I69-rQ-CIW"/>
+                                                                                                        
                                                                                                 <constraint firstItem="Gue-kM-Tul" firstAttribute="leading" secondItem="W7y-m5-Uda" secondAttribute="leading" constant="20" id="aTR-Rn-ujr"/>
                                                                                                 <constraint firstItem="c5f-zo-l44" firstAttribute="centerY" secondItem="hNw-Tw-oWu" secondAttribute="centerY" id="hmP-UA-FAI"/>
                                                                                                 <constraint firstItem="Gue-kM-Tul" firstAttribute="top" secondItem="hNw-Tw-oWu" secondAttribute="bottom" id="wjJ-zm-QrZ"/>
@@ -738,6 +747,7 @@
                                                                                 <outlet property="avatarImageView" destination="hNw-Tw-oWu" id="wsH-cr-Y7j"/>
                                                                                 <outlet property="contenLabel" destination="Gue-kM-Tul" id="Hvz-Dt-cNv"/>
                                                                                 <outlet property="userNameLabel" destination="c5f-zo-l44" id="ge8-ov-C43"/>
+                                                                                <outlet property="moreLabel" destination="mL2-xx-001" id="o2m-more-001"/>
                                                                             </connections>
                                                                         </collectionViewCell>
                                                                     </cells>

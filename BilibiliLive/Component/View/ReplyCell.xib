@@ -43,11 +43,20 @@
                                     <nil key="textColor"/>
                                     <nil key="highlightedColor"/>
                                 </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="1" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mL1-xx-001">
+                                    <rect key="frame" x="78" y="320" width="200" height="20"/>
+                                    <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
                             </subviews>
                             <constraints>
                                 <constraint firstItem="cNI-2h-EqQ" firstAttribute="leading" secondItem="QAe-nh-BI1" secondAttribute="trailing" constant="8" symbolic="YES" id="4dP-d4-GdT"/>
                                 <constraint firstAttribute="trailing" secondItem="rG1-i7-Lu2" secondAttribute="trailing" constant="20" id="GSC-ii-sg3"/>
-                                <constraint firstAttribute="bottom" secondItem="rG1-i7-Lu2" secondAttribute="bottom" id="Y41-Mq-PTg"/>
+                                <constraint firstItem="mL1-xx-001" firstAttribute="trailing" secondItem="NU3-Bt-p2n" secondAttribute="trailing" constant="-20" id="mL1-trailing-to-content"/>
+                                <constraint firstItem="mL1-xx-001" firstAttribute="top" secondItem="rG1-i7-Lu2" secondAttribute="bottom" constant="6" id="mL1-top-001"/>
+                                <constraint firstItem="mL1-xx-001" firstAttribute="bottom" secondItem="NU3-Bt-p2n" secondAttribute="bottom" constant="-20" id="mL1-bottom-001"/>
+                                
                                 <constraint firstItem="cNI-2h-EqQ" firstAttribute="centerY" secondItem="QAe-nh-BI1" secondAttribute="centerY" id="eDT-iC-jop"/>
                                 <constraint firstItem="rG1-i7-Lu2" firstAttribute="leading" secondItem="NU3-Bt-p2n" secondAttribute="leading" constant="20" id="jyZ-sx-GoO"/>
                                 <constraint firstItem="QAe-nh-BI1" firstAttribute="top" secondItem="NU3-Bt-p2n" secondAttribute="top" constant="20" id="nxD-2i-sMk"/>
@@ -75,6 +84,7 @@
                 <outlet property="avatarImageView" destination="QAe-nh-BI1" id="1rg-6A-61M"/>
                 <outlet property="contenLabel" destination="rG1-i7-Lu2" id="jx0-u9-gWO"/>
                 <outlet property="userNameLabel" destination="cNI-2h-EqQ" id="IuH-sE-r7M"/>
+                <outlet property="moreLabel" destination="mL1-xx-001" id="o1m-more-001"/>
             </connections>
             <point key="canvasLocation" x="-146" y="233"/>
         </collectionViewCell>
