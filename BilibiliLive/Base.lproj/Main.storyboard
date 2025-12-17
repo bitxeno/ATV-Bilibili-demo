@@ -493,15 +493,15 @@
                                                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     <color key="tintColor" name="bgColor"/>
                                                                     <userDefinedRuntimeAttributes>
-                                                                        <userDefinedRuntimeAttribute type="image" keyPath="image" value="hand.thumbsdown" catalog="system"/>
-                                                                        <userDefinedRuntimeAttribute type="string" keyPath="title" value="不喜欢"/>
-                                                                        <userDefinedRuntimeAttribute type="image" keyPath="onImage" value="hand.thumbsdown.fill" catalog="system"/>
+                                                                        <userDefinedRuntimeAttribute type="image" keyPath="image" value="ellipsis.circle" catalog="system"/>
+                                                                        <userDefinedRuntimeAttribute type="string" keyPath="title" value="更多"/>
+                                                                        <userDefinedRuntimeAttribute type="image" keyPath="onImage" value="ellipsis.circle.fill" catalog="system"/>
                                                                         <userDefinedRuntimeAttribute type="color" keyPath="titleColor">
                                                                             <color key="value" name="titleColor"/>
                                                                         </userDefinedRuntimeAttribute>
                                                                     </userDefinedRuntimeAttributes>
                                                                     <connections>
-                                                                        <action selector="actionDislike:" destination="Q5X-tf-Ysh" eventType="primaryActionTriggered" id="WzX-3P-wiW"/>
+                                                                        <action selector="actionMore:" destination="Q5X-tf-Ysh" eventType="primaryActionTriggered" id="WzX-3P-wiW"/>
                                                                     </connections>
                                                                 </view>
                                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="D4E-g6-BwX">
@@ -819,7 +819,7 @@
                         <outlet property="coinButton" destination="Olx-aY-Y43" id="a4a-wo-J4P"/>
                         <outlet property="coverImageView" destination="rEZ-Qh-SKb" id="OqG-Sz-6Jv"/>
                         <outlet property="danmakuLabel" destination="oQj-o5-WSc" id="d30-gB-b1Q"/>
-                        <outlet property="dislikeButton" destination="Efg-f4-str" id="3iU-2Q-SZS"/>
+                        <outlet property="moreButton" destination="Efg-f4-str" id="3iU-2Q-SZS"/>
                         <outlet property="durationLabel" destination="ymk-p2-UgZ" id="bJX-8D-fcZ"/>
                         <outlet property="effectContainerView" destination="akE-tZ-Y1L" id="fRI-xN-KfU"/>
                         <outlet property="favButton" destination="fxL-C9-Fqb" id="X9x-nb-2hH"/>

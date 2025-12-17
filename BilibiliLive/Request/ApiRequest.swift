@@ -334,6 +334,11 @@ enum ApiRequest {
         requestJSON("https://app.biliapi.net/x/v2/view/dislike", method: .post, parameters: ["aid": aid, "dislike": dislike ? 0 : 1])
     }
 
+    static func requestAddToView(aid: Int) {
+        guard let csrf = CookieHandler.shared.csrf() else { return }
+        requestJSON("https://api.bilibili.com/x/v2/history/toview/add", method: .post, parameters: ["aid": aid, "csrf": csrf])
+    }
+
     struct BangumiInfo: Codable, Hashable {
         struct Stat: Codable, Hashable {
             let coins, danmakus, favorite, favorites: Int

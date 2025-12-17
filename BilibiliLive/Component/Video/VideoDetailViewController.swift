@@ -30,7 +30,7 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var likeButton: BLCustomButton!
     @IBOutlet var coinButton: BLCustomButton!
     @IBOutlet var noteView: NoteDetailView!
-    @IBOutlet var dislikeButton: BLCustomButton!
+    @IBOutlet var moreButton: BLCustomButton!
 
     @IBOutlet var actionButtonSpaceView: UIView!
     @IBOutlet var durationLabel: UILabel!
@@ -136,7 +136,7 @@ class VideoDetailViewController: UIViewController {
             focusGuide.rightAnchor.constraint(equalTo: actionButtonSpaceView.rightAnchor),
             focusGuide.bottomAnchor.constraint(equalTo: actionButtonSpaceView.bottomAnchor),
         ])
-        focusGuide.preferredFocusEnvironments = [dislikeButton]
+        focusGuide.preferredFocusEnvironments = [moreButton]
 
         replysCollectionView.publisher(for: \.contentSize).sink { [weak self] newSize in
             self?.repliesCollectionViewHeightConstraints.constant = newSize.height
@@ -501,9 +501,30 @@ class VideoDetailViewController: UIViewController {
         }
     }
 
-    @IBAction func actionDislike(_ sender: Any) {
-        dislikeButton.isOn.toggle()
-        ApiRequest.requestDislike(aid: aid, dislike: dislikeButton.isOn)
+    @IBAction func actionMore(_ sender: Any) {
+        if let btn = sender as? BLCustomButton {
+            let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+            let dislikeAction = UIAlertAction(title: "不喜欢", style: .default) { [weak self] _ in
+                guard let self else { return }
+                ApiRequest.requestDislike(aid: self.aid, dislike: btn.isOn)
+            }
+            let iconConfig = UIImage.SymbolConfiguration(textStyle: .body)
+            if let img = UIImage(systemName: "hand.thumbsdown", withConfiguration: iconConfig) {
+                dislikeAction.setValue(img, forKey: "image")
+            }
+            alert.addAction(dislikeAction)
+
+            let watchLaterAction = UIAlertAction(title: "稍后再看", style: .default) { [weak self] _ in
+                guard let self else { return }
+                ApiRequest.requestAddToView(aid: self.aid)
+            }
+            if let img = UIImage(systemName: "clock", withConfiguration: iconConfig) {
+                watchLaterAction.setValue(img, forKey: "image")
+            }
+            alert.addAction(watchLaterAction)
+            alert.addAction(UIAlertAction(title: "取消", style: .cancel))
+            present(alert, animated: true)
+        }
     }
 
     @IBAction func actionTogglePageSort(_ sender: Any) {
