@@ -147,7 +147,7 @@ extension WebRequest {
             if let imgKey = Cache.shared.imgKey,
                let subKey = Cache.shared.subKey,
                let lastUpdate = Cache.shared.lastUpdate,
-               Date().timeIntervalSince(lastUpdate) < 60 * 60,
+               Date().timeIntervalSince(lastUpdate) < 60 * 60 * 2,
                Calendar.current.isDate(Date(), inSameDayAs: lastUpdate)
             {
                 completion(.success((imgKey, subKey, true)))
