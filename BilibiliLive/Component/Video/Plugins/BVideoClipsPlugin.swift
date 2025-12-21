@@ -23,7 +23,7 @@ class BVideoClipsPlugin: NSObject, CommonPlayerPlugin {
 
     func playerWillStart(player: AVPlayer) {
         for clip in clipInfos {
-            let start = CMTime(seconds: clip.start, preferredTimescale: 1)
+            let start = CMTime(seconds: clip.start == 0 ? 1 : clip.start, preferredTimescale: 1)
             let end = CMTime(seconds: clip.end, preferredTimescale: 1)
             let startObserver = player.addBoundaryTimeObserver(forTimes: [NSValue(time: start)], queue: .main) {
                 [weak player, weak self] in
