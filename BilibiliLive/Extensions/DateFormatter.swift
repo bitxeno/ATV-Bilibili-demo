@@ -14,6 +14,12 @@ extension DateFormatter {
         return formater
     }()
 
+    static let time = {
+        let formater = DateFormatter()
+        formater.dateFormat = "HH:mm"
+        return formater
+    }()
+
     static func stringFor(timestamp: Int?) -> String? {
         guard let timestamp = timestamp else { return nil }
         return date.string(from: Date(timeIntervalSince1970: TimeInterval(timestamp)))
@@ -37,28 +43,27 @@ extension DateFormatter {
         let seconds = Int(timeInterval)
         let minutes = seconds / 60
         let hours = minutes / 60
-        let days = hours / 24
-        let weeks = days / 7
-        let months = days / 30
-        let years = days / 365
 
-        switch seconds {
-        case 0..<10:
+        // 小于 1 小时仍显示相对时间
+        if seconds < 10 {
             return "刚刚"
-        case 10..<60:
+        } else if seconds < 60 {
             return "\(seconds)秒前"
-        case 60..<3600:
+        } else if seconds < 3600 {
             return "\(minutes)分钟前"
-        case 3600..<86400:
-            return "\(hours)小时前"
-        case 86400..<604800:
-            return "\(days)天前"
-        case 604800..<2592000:
-            return "\(weeks)周前"
-        case 2592000..<31536000:
-            return "\(months)个月前"
-        default:
-            return "\(years)年前"
         }
+
+        // >=1小时 的情况：同一天显示 "今天HH:mm"，昨天显示 "昨天HH:mm"
+        let calendar = Calendar.current
+        if calendar.isDateInToday(date) {
+            return "今天\(time.string(from: date))"
+        }
+
+        if calendar.isDateInYesterday(date) {
+            return "昨天\(time.string(from: date))"
+        }
+
+        // 超过 2 天则使用具体日期显示（yyyy-MM-dd）
+        return self.date.string(from: date)
     }
 }

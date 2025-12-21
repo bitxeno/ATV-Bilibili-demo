@@ -289,13 +289,10 @@ extension WebRequest {
         try await request(url: EndPoint.userEpisodeInfo, parameters: ["ep_id": epid])
     }
 
-    static func requestHistory(complete: (([HistoryData]) -> Void)?) {
-        request(url: "https://api.bilibili.com/x/v2/history") {
-            (result: Result<[HistoryData], RequestError>) in
-            if let data = try? result.get() {
-                complete?(data)
-            }
-        }
+    static func requestHistory(max: UInt64 = 0, viewAt: Int = 0, pageSize: Int = 20) async throws -> HistoryResp {
+        let url = "https://api.bilibili.com/x/web-interface/history/cursor"
+        let res: HistoryResp = try await request(url: url, parameters: ["view_at": viewAt, "ps": pageSize])
+        return res
     }
 
     static func requestPlayerInfo(aid: Int, cid: Int) async throws -> PlayerInfo {
@@ -600,30 +597,77 @@ extension WebRequest {
     }
 }
 
-struct HistoryData: DisplayData, Codable {
-    struct HistoryPage: Codable, Hashable {
-        let cid: Int
-        let duration: Int
+struct HistoryResp: Codable, Hashable {
+    struct Cursor: Codable, Hashable {
+        let max: UInt64
+        let ps: Int
+        let view_at: Int
     }
 
-    let pic: URL?
+    let list: [HistoryData]
+    let cursor: Cursor
+}
 
-    let owner: VideoOwner
-    let cid: Int?
-    let aid: Int
+struct HistoryData: PlayableData, Codable {
+    struct History: Codable, Hashable {
+        let cid: Int
+        let epid: Int
+        let oid: Int
+        let bvid: String
+        let business: String // pgc: 番剧 live: 直播 archive: 视频
+    }
+
+//    private let cidValue: Int?
+
+    let cover: URL?
     let progress: Int
     let duration: Int
     let view_at: Int
-    let stat: Stat?
-    let page: HistoryPage?
-    //    let bangumi: BangumiData?
+    let author_name: String
+    let author_face: String?
+    let titleValue: String
+    let show_title: String
+    let badge: String?
+    let history: History
+
+    enum CodingKeys: String, CodingKey {
+        case cover, progress, duration, view_at, author_name, author_face, show_title, badge, history
+        case titleValue = "title"
+    }
+
+    // PlayableData
+    var aid: Int {
+        if history.business == "archive" || history.business == "pgc" {
+            return history.oid
+        }
+        return 0
+    }
+
+    var cid: Int {
+        return history.cid
+    }
 
     // displayData
-    let title: String
-    var ownerName: String { owner.name }
+    var title: String {
+        if history.business == "pgc" {
+            return show_title
+        } else {
+            return titleValue
+        }
+    }
+
+    var pic: URL? { cover }
+    var ownerName: String {
+        if history.business == "pgc" {
+            return titleValue
+        } else {
+            return author_name
+        }
+    }
+
     var avatar: URL? {
-        if owner.face != nil {
-            return URL(string: owner.face!)
+        if author_face != nil {
+            return URL(string: author_face!)
         }
         return nil
     }
@@ -633,15 +677,13 @@ struct HistoryData: DisplayData, Codable {
     }
 
     var overlay: DisplayOverlay? {
-        var leftItems = [DisplayOverlay.DisplayOverlayItem]()
         var rightItems = [DisplayOverlay.DisplayOverlayItem]()
-        rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: "\(TimeInterval(progress).timeString())/\(TimeInterval(page?.duration ?? duration).timeString())"))
-        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
-    }
-
-    struct Stat: Codable, Hashable {
-        let view: Int
-        let danmaku: Int
+        var displayBadge: DisplayOverlay.DisplayOverlayBadge? = nil
+        rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: "\(TimeInterval(progress).timeString())/\(TimeInterval(duration).timeString())"))
+        if let badge {
+            displayBadge = .init(text: badge)
+        }
+        return DisplayOverlay(leftItems: [], rightItems: rightItems, badge: displayBadge)
     }
 }
 

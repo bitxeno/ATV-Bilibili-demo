@@ -87,7 +87,7 @@ struct LiveRoom: DisplayData, Codable {
     let title: String
     let room_id: Int
     let uname: String
-    let area_v2_name: String
+    let area_v2_name: String?
     let keyframe: String?
     let face: URL?
     let cover_from_user: URL?
@@ -103,6 +103,7 @@ struct LiveRoom: DisplayData, Codable {
     var avatar: URL? { face }
 
     var overlay: DisplayOverlay? {
+        guard let area_v2_name else { return nil }
         var leftItems = [DisplayOverlay.DisplayOverlayItem]()
         leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: area_v2_name))
         return DisplayOverlay(leftItems: leftItems)
