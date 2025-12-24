@@ -627,11 +627,12 @@ struct HistoryData: PlayableData, Codable {
     let author_face: String?
     let titleValue: String
     let show_title: String
+    let tag_name: String
     let badge: String?
     let history: History
 
     enum CodingKeys: String, CodingKey {
-        case cover, progress, duration, view_at, author_name, author_face, show_title, badge, history
+        case cover, progress, duration, view_at, author_name, author_face, show_title, tag_name, badge, history
         case titleValue = "title"
     }
 
@@ -677,13 +678,18 @@ struct HistoryData: PlayableData, Codable {
     }
 
     var overlay: DisplayOverlay? {
+        var leftItems = [DisplayOverlay.DisplayOverlayItem]()
         var rightItems = [DisplayOverlay.DisplayOverlayItem]()
         var displayBadge: DisplayOverlay.DisplayOverlayBadge? = nil
-        rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: "\(TimeInterval(progress).timeString())/\(TimeInterval(duration).timeString())"))
+        if history.business == "live" {
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: tag_name))
+        } else {
+            rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: "\(TimeInterval(progress).timeString())/\(TimeInterval(duration).timeString())"))
+        }
         if let badge {
             displayBadge = .init(text: badge)
         }
-        return DisplayOverlay(leftItems: [], rightItems: rightItems, badge: displayBadge)
+        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems, badge: displayBadge)
     }
 }
 
