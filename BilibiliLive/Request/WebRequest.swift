@@ -625,7 +625,7 @@ struct HistoryData: PlayableData, Codable {
 
 //    private let cidValue: Int?
 
-    let cover: URL?
+    let cover: String
     let progress: Int
     let duration: Int
     let view_at: Int
@@ -640,6 +640,10 @@ struct HistoryData: PlayableData, Codable {
     enum CodingKeys: String, CodingKey {
         case cover, progress, duration, view_at, author_name, author_face, show_title, tag_name, badge, history
         case titleValue = "title"
+    }
+
+    var isSupportBusiness: Bool {
+        history.business == "archive" || history.business == "pgc" || history.business == "live"
     }
 
     // PlayableData
@@ -663,7 +667,7 @@ struct HistoryData: PlayableData, Codable {
         }
     }
 
-    var pic: URL? { cover }
+    var pic: URL? { URL(string: cover) }
     var ownerName: String {
         if history.business == "pgc" {
             return titleValue

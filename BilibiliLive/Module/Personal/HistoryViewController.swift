@@ -23,13 +23,13 @@ class HistoryViewController: StandardVideoCollectionViewController<HistoryData> 
         }
         let resp = try await WebRequest.requestHistory(max: cursor.max, viewAt: cursor.view_at, pageSize: cursor.ps)
         cursor = resp.cursor
-        return resp.list
+        return resp.list.filter({ $0.isSupportBusiness })
     }
 
     override func goDetail(with record: HistoryData) {
         if record.history.business == "live" {
             let playerVC = LivePlayerViewController()
-            playerVC.room = LiveRoom(title: record.title, room_id: Int(record.history.oid), uname: record.author_name, area_v2_name: nil, keyframe: record.cover?.absoluteString, face: record.avatar, cover_from_user: nil)
+            playerVC.room = LiveRoom(title: record.title, room_id: Int(record.history.oid), uname: record.author_name, area_v2_name: nil, keyframe: record.cover, face: record.avatar, cover_from_user: nil)
             present(playerVC, animated: true, completion: nil)
         } else {
             super.goDetail(with: record)
