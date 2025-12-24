@@ -136,7 +136,13 @@ enum WebRequest {
                 if errorCode != 0 {
                     let message = json["message"].stringValue
                     print(errorCode, message)
-                    Logger.info("\(json.stringValue)")
+
+                    // Handle captcha validation error (-352)
+                    if errorCode == -352 {
+                        Logger.warn("WbiSign error (code=-352), clearing cache. URL: \(url)")
+                        WbiKeysCache.shared.clear()
+                    }
+
                     complete?(.failure(.statusFail(code: errorCode, message: message)))
                     return
                 }
@@ -271,8 +277,8 @@ extension WebRequest {
     }
 
     static func requestBangumiInfo(seasonID: Int) async throws -> BangumiInfo {
-        let info: BangumiInfo = try await request(url: "https://api.bilibili.com/pgc/view/web/season", parameters: ["season_id": seasonID], dataObj: "result")
-        return info
+        let res: BangumiInfo = try await request(url: "https://api.bilibili.com/pgc/view/web/season", parameters: ["season_id": seasonID], dataObj: "result")
+        return res
     }
 
     static func requestBangumiSeasonView(epid: Int) async throws -> BangumiSeasonView {
@@ -349,17 +355,17 @@ extension WebRequest {
         return res.medias ?? []
     }
 
-    static func reportWatchHistory(aid: Int, cid: Int, currentTime: Int, epid: Int? = nil, seasonId: Int? = nil, isBangumi: Bool = false, bangumiType: Int? = nil) {
+    static func reportWatchHistory(aid: Int, cid: Int, currentTime: Int, epid: Int? = nil, seasonId: Int? = nil, subType: Int? = nil) {
         var parameters: [String: Any] = [
             "aid": aid,
             "cid": cid,
             "played_time": currentTime,
         ]
 
-        if isBangumi {
+        if epid ?? 0 > 0 || seasonId ?? 0 > 0 {
             // 番剧类型标识
             parameters["type"] = 4
-            parameters["sub_type"] = bangumiType ?? 1
+            parameters["sub_type"] = subType ?? 1
 
             // 番剧ID
             if let epid = epid {
@@ -992,15 +998,6 @@ struct BangumiInfo: Codable, Hashable {
     let episodes: [Episode] // 正片剧集列表
     let user_status: UserStatus?
     let section: [Section]?
-}
-
-enum BangumiType: Int {
-    case anime = 1
-    case movie = 2
-    case documentary = 3
-    case guochuang = 4
-    case tv = 5
-    case variety = 7
 }
 
 struct BangumiSeasonView: Codable, Hashable {
