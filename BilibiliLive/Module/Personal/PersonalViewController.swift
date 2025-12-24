@@ -51,8 +51,15 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
     }
 
     func setupData() {
+        cellModels.append(CellModel(title: "历史记录", contentVC: HistoryViewController()))
+        cellModels.append(CellModel(title: "稍后再看", contentVC: ToViewViewController()))
+        cellModels.append(CellModel(title: "关注UP", contentVC: FollowUpsViewController()))
         let setting = CellModel(title: "设置", contentVC: SettingsViewController())
         cellModels.append(setting)
+        cellModels.append(CellModel(title: "我的收藏", autoSelect: false, action: { [weak self] in
+            let controller = FavoriteViewController()
+            self?.present(controller, animated: true)
+        }))
         cellModels.append(CellModel(title: "账号切换", autoSelect: false, action: { [weak self] in
             let controller = AccountSwitcherViewController()
             controller.modalPresentationStyle = .overFullScreen
@@ -69,13 +76,7 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
         //     let controller = FollowBangumiViewController()
         //     self?.present(controller, animated: true)
         // }))
-        cellModels.append(CellModel(title: "我的收藏", autoSelect: false, action: { [weak self] in
-            let controller = FavoriteViewController()
-            self?.present(controller, animated: true)
-        }))
-        cellModels.append(CellModel(title: "稍后再看", contentVC: ToViewViewController()))
-        cellModels.append(CellModel(title: "历史记录", contentVC: HistoryViewController()))
-        cellModels.append(CellModel(title: "关注UP", contentVC: FollowUpsViewController()))
+
         // cellModels.append(CellModel(title: "每周必看", contentVC: WeeklyWatchViewController()))
 
         let logout = CellModel(title: "登出", autoSelect: false) {
