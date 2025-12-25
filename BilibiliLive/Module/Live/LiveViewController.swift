@@ -97,7 +97,7 @@ struct LiveRoom: DisplayData, Codable {
         if let keyframe {
             return URL(string: keyframe)
         }
-        return nil
+        return cover_from_user
     }
 
     var avatar: URL? { face }
@@ -160,6 +160,10 @@ extension WebRequest {
 }
 
 struct AreaLiveRoom: DisplayData, Codable, PlayableData {
+    struct WatchedShow: Codable, Hashable {
+        var text_small: String
+    }
+
     let title: String
     let roomid: Int
     let uname: String
@@ -169,16 +173,29 @@ struct AreaLiveRoom: DisplayData, Codable, PlayableData {
     let parent_name: String
     let area_name: String
     let area_v2_name: String
+    let watched_show: WatchedShow?
+
+    // DisplayData
     var ownerName: String { uname }
-    var pic: URL? { URL(string: system_cover) }
+    var pic: URL? {
+        if let keyframe = URL(string: system_cover) {
+            return keyframe
+        }
+        return user_cover
+    }
+
     var avatar: URL? { face }
     var cid: Int { 0 }
     var aid: Int { 0 }
 
     var overlay: DisplayOverlay? {
         var leftItems = [DisplayOverlay.DisplayOverlayItem]()
+        var rightItems = [DisplayOverlay.DisplayOverlayItem]()
         leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: area_v2_name))
-        return DisplayOverlay(leftItems: leftItems)
+        if let watched_show {
+            rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: "eye", text: watched_show.text_small))
+        }
+        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
     }
 
     func toLiveRoom() -> LiveRoom {
