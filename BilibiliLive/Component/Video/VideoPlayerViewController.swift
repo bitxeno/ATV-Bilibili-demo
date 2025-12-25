@@ -36,6 +36,10 @@ class VideoNextProvider {
 
     private var index = 0
     private let playSeq: [PlayInfo]
+    var count: Int {
+        return playSeq.count
+    }
+
     func reset() {
         index = 0
     }

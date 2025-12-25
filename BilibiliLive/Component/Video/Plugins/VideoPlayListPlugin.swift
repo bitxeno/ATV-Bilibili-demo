@@ -23,13 +23,13 @@ class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
     }
 
     func playerWillStart(player: AVPlayer) {
-        guard let playerVC = playerVC else { return }
+        guard let playerVC, let nextProvider, nextProvider.count > 1 else { return }
 
         if playerVC.infoViewActions.count > 1 {
             playerVC.infoViewActions.removeLast()
         }
 
-        if let next = nextProvider?.peekNext() {
+        if let next = nextProvider.peekNext() {
             let title = next.title ?? "下一集"
             let nextAction = UIAction(title: title, image: UIImage(systemName: "forward.end.fill")) { [weak self] _ in
                 _ = self?.playNext()
