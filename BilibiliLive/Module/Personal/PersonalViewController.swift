@@ -33,6 +33,7 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupData()
+        leftCollectionView.remembersLastFocusedIndexPath = true
         leftCollectionView.reloadData()
         avatarImageView.layer.cornerRadius = avatarImageView.frame.size.width / 2
         leftCollectionView.register(BLSettingLineCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
