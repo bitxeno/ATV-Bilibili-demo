@@ -209,7 +209,7 @@ class VideoDetailViewController: UIViewController {
                     epid = epi.id
                     updatePlayProgressIfNeeded(progress: info.user_status?.progress, episode: epi)
                 }
-                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + " " + $0.long_title) })
+                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.show_title, badge: $0.badge, badge_type: $0.badge_type) })
             } else if epid > 0 {
                 isBangumi = true
                 let info = try await WebRequest.requestBangumiInfo(epid: epid)
@@ -222,7 +222,7 @@ class VideoDetailViewController: UIViewController {
                 } else {
                     throw NSError(domain: "get epi fail", code: -1)
                 }
-                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + "\n" + $0.long_title, badge: $0.badge, badge_type: $0.badge_type) })
+                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.show_title, badge: $0.badge, badge_type: $0.badge_type) })
                 seasonId = info.season_id
             }
             let data = try await WebRequest.requestDetailVideo(aid: aid)
@@ -234,7 +234,7 @@ class VideoDetailViewController: UIViewController {
                 let info = try await WebRequest.requestBangumiInfo(epid: epid)
                 seasonId = info.season_id
                 subType = info.type
-                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + " " + $0.long_title) })
+                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.show_title, badge: $0.badge, badge_type: $0.badge_type) })
                 if let epi = info.episodes.first(where: { $0.id == epid }) {
                     updatePlayProgressIfNeeded(progress: info.user_status?.progress, episode: epi)
                 }

@@ -954,6 +954,10 @@ struct BangumiInfo: Codable, Hashable {
         let badge: String?
         let badge_type: Int?
 
+        var show_title: String {
+            return title + "\n" + long_title
+        }
+
         enum CodingKeys: String, CodingKey {
             case id, aid, cid, cover, long_title, title, badge, badge_type
         }
