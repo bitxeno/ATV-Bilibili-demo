@@ -639,11 +639,17 @@ struct HistoryData: PlayableData, Codable {
     let view_at: Int
     let author_name: String
     let author_face: String?
+    let titleValue: String
     let show_title: String
     let tag_name: String
     let new_desc: String
     let badge: String?
     let history: History
+
+    enum CodingKeys: String, CodingKey {
+        case cover, progress, duration, view_at, author_name, author_face, show_title, tag_name, new_desc, badge, history
+        case titleValue = "title"
+    }
 
     var isSupportBusiness: Bool {
         history.business == "archive" || history.business == "pgc" || history.business == "live"
@@ -662,11 +668,18 @@ struct HistoryData: PlayableData, Codable {
     }
 
     // displayData
-    var title: String
+    var title: String {
+        if history.business == "pgc" {
+            return show_title.isEmpty ? titleValue : show_title
+        } else {
+            return titleValue
+        }
+    }
+
     var pic: URL? { URL(string: cover) }
     var ownerName: String {
         if history.business == "pgc" {
-            return show_title.isEmpty ? new_desc : show_title
+            return show_title.isEmpty ? new_desc : titleValue
         } else {
             return author_name
         }
@@ -688,7 +701,7 @@ struct HistoryData: PlayableData, Codable {
         var rightItems = [DisplayOverlay.DisplayOverlayItem]()
         var displayBadge: DisplayOverlay.DisplayOverlayBadge? = nil
         if history.business == "live" {
-            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: tag_name))
+            rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: tag_name))
         } else {
             rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: "\(TimeInterval(progress).timeString())/\(TimeInterval(duration).timeString())"))
         }

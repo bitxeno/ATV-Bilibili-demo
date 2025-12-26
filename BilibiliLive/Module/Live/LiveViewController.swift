@@ -104,9 +104,9 @@ struct LiveRoom: DisplayData, Codable {
 
     var overlay: DisplayOverlay? {
         guard let area_v2_name else { return nil }
-        var leftItems = [DisplayOverlay.DisplayOverlayItem]()
-        leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: area_v2_name))
-        return DisplayOverlay(leftItems: leftItems)
+        var rightItems = [DisplayOverlay.DisplayOverlayItem]()
+        rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: area_v2_name))
+        return DisplayOverlay(leftItems: [], rightItems: rightItems)
     }
 }
 
@@ -191,10 +191,10 @@ struct AreaLiveRoom: DisplayData, Codable, PlayableData {
     var overlay: DisplayOverlay? {
         var leftItems = [DisplayOverlay.DisplayOverlayItem]()
         var rightItems = [DisplayOverlay.DisplayOverlayItem]()
-        leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: area_v2_name))
         if let watched_show {
-            rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: "eye", text: watched_show.text_small))
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "eye", text: watched_show.text_small))
         }
+        rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: area_v2_name))
         return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
     }
 
