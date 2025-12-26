@@ -561,6 +561,10 @@ struct SearchLiveResult: Decodable, Hashable {
         let live_room: [LiveRoom]?
 
         struct LiveRoom: Codable, Hashable, DisplayData {
+            struct WatchedShow: Codable, Hashable {
+                var text_small: String
+            }
+
             let uname: String
             let uface: URL?
             let user_cover: URL?
@@ -568,6 +572,12 @@ struct SearchLiveResult: Decodable, Hashable {
             let roomid: Int
             let cate_name: String
             let titleWithHtml: String
+            let watched_show: WatchedShow?
+
+            enum CodingKeys: String, CodingKey {
+                case uname, uface, user_cover, cover, roomid, cate_name, watched_show
+                case titleWithHtml = "title"
+            }
 
             // DisplayData
             var title: String { titleWithHtml.removingHTMLTags() }
@@ -576,13 +586,12 @@ struct SearchLiveResult: Decodable, Hashable {
             var avatar: URL? { uface?.addSchemeIfNeed() }
             var overlay: DisplayOverlay? {
                 var leftItems = [DisplayOverlay.DisplayOverlayItem]()
+                var rightItems = [DisplayOverlay.DisplayOverlayItem]()
                 leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: cate_name))
-                return DisplayOverlay(leftItems: leftItems)
-            }
-
-            enum CodingKeys: String, CodingKey {
-                case uname, uface, user_cover, cover, roomid, cate_name
-                case titleWithHtml = "title"
+                if let watched_show {
+                    rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: "eye", text: watched_show.text_small))
+                }
+                return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
             }
         }
     }
