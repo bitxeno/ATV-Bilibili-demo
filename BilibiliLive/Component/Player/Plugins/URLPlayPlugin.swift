@@ -33,6 +33,10 @@ class URLPlayPlugin: NSObject {
         player.automaticallyWaitsToMinimizeStalling = !isLive
         playerVC?.player = player
     }
+
+    func isPlaying(urlString: String) -> Bool {
+        return currentUrl == urlString
+    }
 }
 
 extension URLPlayPlugin: CommonPlayerPlugin {

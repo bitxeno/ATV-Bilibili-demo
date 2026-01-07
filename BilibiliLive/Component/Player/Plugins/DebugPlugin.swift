@@ -103,13 +103,19 @@ class DebugPlugin: NSObject, CommonPlayerPlugin {
         let changes = item.numberOfServerAddressChanges
         let dropped = item.numberOfDroppedVideoFrames
         let stalls = item.numberOfStalls
+        let watchedDuration = item.durationWatched
+        let downloadedDuration = item.segmentsDownloadedDuration
+        let overdue = item.downloadOverdue
         let averageAudioBitrate = item.averageAudioBitrate
         let averageVideoBitrate = item.averageVideoBitrate
         let indicatedBitrate = item.indicatedBitrate
         let observedBitrate = item.observedBitrate
+        let cachedStr = String(format: "%.2fs", downloadedDuration - watchedDuration)
+        let percent: String = downloadedDuration > 0 ? String(format: "%.1f%%", watchedDuration / downloadedDuration * 100) : "-"
         logs += """
         uri:\(uri), ip:\(addr), change:\(changes)
-        drop:\(dropped) stalls:\(stalls)
+        drop:\(dropped) stalls:\(stalls) overdue:\(overdue)
+        cached: \(cachedStr) (\(percent))
         bitrate audio:\(bitrateStr(averageAudioBitrate)), video: \(bitrateStr(averageVideoBitrate))
         observedBitrate:\(bitrateStr(observedBitrate))
         indicatedAverageBitrate:\(bitrateStr(indicatedBitrate))

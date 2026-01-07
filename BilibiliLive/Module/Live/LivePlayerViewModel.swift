@@ -51,7 +51,8 @@ class LivePlayerViewModel {
                 try await initPlayer()
 
                 let danmu = await initDanmu()
-                self.onPluginReady?(danmu)
+                let linePlugin = LineCandidatesPlugin(playPlugin: playPlugin, candidates: allPlayInfos)
+                self.onPluginReady?(danmu + [linePlugin])
 
                 let infoPlugin = BVideoInfoPlugin()
                 if let info = await fetchDespInfo() {
@@ -138,7 +139,7 @@ class LivePlayerViewModel {
                         let host = url_info.host
                         let extra = url_info.extra
                         let url = "\(host)\(baseUrl)\(extra)"
-                        let playInfo = LivePlayUrlInfo(formate: formate, url: url, current_qn: qn)
+                        let playInfo = LivePlayUrlInfo(formate: formate, url: url, current_qn: qn, codec_name: codec.codecName)
                         allPlayInfos.append(playInfo)
                     }
                 }
@@ -188,6 +189,7 @@ struct LivePlayUrlInfo {
     let formate: String?
     let url: String
     let current_qn: Int?
+    let codec_name: String?
 }
 
 extension WebRequest.EndPoint {
