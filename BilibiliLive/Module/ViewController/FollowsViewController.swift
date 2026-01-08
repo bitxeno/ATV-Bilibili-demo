@@ -104,7 +104,11 @@ struct DynamicFeedData: Codable, PlayableData, DisplayData {
         if let durationText = modules.module_dynamic.major?.archive?.duration_text {
             rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: durationText))
         }
-        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
+        var badge: DisplayOverlay.DisplayOverlayBadge?
+        if let text = modules.module_dynamic.major?.pgc?.badge?.text {
+            badge = .init(text: text)
+        }
+        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems, badge: badge)
     }
 
     let type: String
@@ -154,6 +158,12 @@ struct DynamicFeedData: Codable, PlayableData, DisplayData {
                     let title: String?
                     let cover: URL?
                     let jump_url: URL?
+                    let badge: Badge?
+
+                    struct Badge: Codable, Hashable {
+                        let text: String
+                        let bg_color: String?
+                    }
                 }
             }
         }
