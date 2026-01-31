@@ -487,8 +487,9 @@ actor SidxDownloader {
                                                      "Referer": "https://www.bilibili.com/"])
             .serializingData().result.get()
         {
-            let segment = SidxParseUtil.processIndexData(data: res)
-            return segment
+            if let segment = SidxParseUtil.processIndexData(data: res), segment.segments.count > 0 {
+                return segment
+            }
         }
         return nil
     }
