@@ -143,6 +143,11 @@ class VideoDetailViewController: UIViewController {
             self?.repliesCollectionViewHeightConstraints.constant = newSize.height
             self?.view.setNeedsLayout()
         }.store(in: &subscriptions)
+
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handlePlayerDidDismiss),
+                                               name: playerDidDismissNotification,
+                                               object: nil)
     }
 
     override var preferredFocusedView: UIView? {
@@ -159,6 +164,20 @@ class VideoDetailViewController: UIViewController {
         playTimeInSecond = lastTime
         lastPlayCid = episode.cid
         lastPlayTitle = episode.title + " " + episode.long_title
+    }
+
+    private func updatePlayButtonTitle() {
+        guard Settings.continuePlay else { return }
+        if let lastPlayCid, lastPlayCid == cid {
+            let pageCount = isBangumi ? pages.count : (data?.View.pages?.count ?? 0)
+            if let lastPlayTitle, pageCount > 1 {
+                playButton.title = "继续 \(lastPlayTitle)"
+            } else {
+                playButton.title = "继续播放"
+            }
+        } else {
+            playButton.title = "播放"
+        }
     }
 
     private func setupLoading() {
@@ -339,18 +358,7 @@ class VideoDetailViewController: UIViewController {
         followButton.isOn = data.Card.following
 
         // 更新播放按钮标题
-        if Settings.continuePlay {
-            if let lastPlayCid, lastPlayCid == cid {
-                let pageCount = isBangumi ? pages.count : (data.View.pages?.count ?? 0)
-                if let lastPlayTitle, pageCount > 1 {
-                    playButton.title = "继续 \(lastPlayTitle)"
-                } else {
-                    playButton.title = "继续播放"
-                }
-            } else {
-                playButton.title = "播放"
-            }
-        }
+        updatePlayButtonTitle()
 
         avatarImageView.kf.setImage(with: data.avatar, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
 
@@ -563,6 +571,32 @@ class VideoDetailViewController: UIViewController {
             self.present(player, animated: true, completion: nil)
         }
         present(episodeListVC, animated: true)
+    }
+
+    @objc private func handlePlayerDidDismiss(notification: Notification) {
+        guard let playerData = notification.object as? PlayerDetailData else { return }
+        guard let playTimeInSecond = playerData.playerStartPos else { return }
+
+        if isBangumi {
+            if let page = pages.first(where: { $0.cid == playerData.cid }), let epid = page.epid {
+                self.playTimeInSecond = playTimeInSecond
+                lastPlayCid = page.cid
+                lastPlayTitle = page.part.replacingOccurrences(of: "\n", with: " ")
+//                aid = playerData.aid
+//                cid = page.cid
+//                self.epid = epid
+            }
+        } else {
+            if let page = pages.first(where: { $0.cid == playerData.cid }) {
+                self.playTimeInSecond = playTimeInSecond
+                lastPlayCid = page.cid
+                lastPlayTitle = page.part
+                cid = page.cid
+            }
+        }
+
+        // 更新播放按钮标题
+        updatePlayButtonTitle()
     }
 }
 

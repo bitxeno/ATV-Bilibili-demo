@@ -8,6 +8,8 @@
 import Combine
 import UIKit
 
+let playerDidDismissNotification = Notification.Name("PlayerDidDismiss")
+
 struct PlayerDetailData {
     let aid: Int
     let cid: Int
