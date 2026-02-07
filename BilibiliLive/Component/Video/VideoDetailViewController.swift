@@ -430,7 +430,7 @@ class VideoDetailViewController: UIViewController {
     }
 
     @IBAction func actionPlay(_ sender: Any) {
-        let player = VideoPlayerViewController(playInfo: PlayInfo(aid: aid, cid: cid, epid: epid, seasonId: seasonId, subType: subType, title: data?.title, lastPlayCid: lastPlayCid, playTimeInSecond: playTimeInSecond))
+        let player = VideoPlayerViewController(playInfo: PlayInfo(aid: aid, cid: cid, epid: epid, seasonId: seasonId, subType: subType, lastPlayCid: lastPlayCid, playTimeInSecond: playTimeInSecond, title: data?.title))
         player.data = data
         if pages.count > 1, let index = pages.firstIndex(where: { $0.cid == cid }) {
             let seq = pages.dropFirst(index).map({ PlayInfo(aid: aid, cid: $0.cid, epid: $0.epid, seasonId: seasonId, subType: subType, title: $0.part) })
@@ -557,7 +557,7 @@ class VideoDetailViewController: UIViewController {
         episodeListVC.onSelectEpisode = { [weak self] page in
             guard let self = self else { return }
             self.cid = page.cid
-            let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, epid: page.epid, seasonId: self.seasonId, subType: self.subType, title: page.part, lastPlayCid: self.lastPlayCid, playTimeInSecond: self.playTimeInSecond))
+            let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, epid: page.epid, seasonId: self.seasonId, subType: self.subType, lastPlayCid: self.lastPlayCid, playTimeInSecond: self.playTimeInSecond, title: page.part))
             player.data = isBangumi ? nil : data
 
             // 设置连续播放
@@ -605,7 +605,7 @@ extension VideoDetailViewController: UICollectionViewDelegate {
         switch collectionView {
         case pageCollectionView:
             let page = pages[indexPath.item]
-            let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, epid: page.epid, seasonId: seasonId, subType: subType, title: page.part, lastPlayCid: lastPlayCid, playTimeInSecond: playTimeInSecond))
+            let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, epid: page.epid, seasonId: seasonId, subType: subType, lastPlayCid: lastPlayCid, playTimeInSecond: playTimeInSecond, title: page.part))
             player.data = isBangumi ? nil : data
 
             let seq = pages.dropFirst(indexPath.item).map({ PlayInfo(aid: isBangumi ? $0.page : aid, cid: $0.cid, epid: $0.epid, seasonId: seasonId, subType: subType, title: $0.part) })
