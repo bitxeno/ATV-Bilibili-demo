@@ -19,6 +19,7 @@ struct PlayInfo {
     var title: String?
     var lastPlayCid: Int?
     var playTimeInSecond: Int?
+    var title: String?
 
     var isCidVaild: Bool {
         return cid ?? 0 > 0
