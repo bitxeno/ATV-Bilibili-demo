@@ -40,7 +40,7 @@ enum TabBarPage: String, CaseIterable, Codable {
         case .search:
             return "搜索"
         case .followBangumi:
-            return "追番追剧"
+            return "番剧"
         case .followUps:
             return "关注UP"
         case .toView:
@@ -66,7 +66,7 @@ enum TabBarPage: String, CaseIterable, Codable {
     }
 
     static var defaultTabBarPages: [TabBarPage] {
-        [.live, .feed, .hot, .ranking, .follows, .favorite, .personal, .search]
+        [.live, .feed, .hot, .ranking, .follows, .favorite, .personal, .search, .followBangumi]
     }
 
     static var allConfigurablePages: [TabBarPage] {

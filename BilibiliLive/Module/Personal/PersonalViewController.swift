@@ -102,23 +102,24 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
     func setupData() {
         cellModels.removeAll()
 
-        let setting = CellModel(title: "设置", contentVC: SettingsViewController())
-        cellModels.append(setting)
-        cellModels.append(CellModel(title: "我的收藏", autoSelect: false, action: { [weak self] in
-            let controller = FavoriteViewController()
-            self?.present(controller, animated: true)
-        }))
-        cellModels.append(CellModel(title: "账号切换", autoSelect: false, action: { [weak self] in
-            let controller = AccountSwitcherViewController()
-            controller.modalPresentationStyle = .overFullScreen
-            self?.present(controller, animated: true)
-        }))
-
         for page in Settings.personalPages {
             if let model = makeCellModel(for: page) {
                 cellModels.append(model)
             }
         }
+        cellModels.append(CellModel(title: "我的收藏", autoSelect: false, action: { [weak self] in
+            let controller = FavoriteViewController()
+            self?.present(controller, animated: true)
+        }))
+
+        let setting = CellModel(title: "设置", contentVC: SettingsViewController())
+        cellModels.append(setting)
+
+        cellModels.append(CellModel(title: "账号切换", autoSelect: false, action: { [weak self] in
+            let controller = AccountSwitcherViewController()
+            controller.modalPresentationStyle = .overFullScreen
+            self?.present(controller, animated: true)
+        }))
 
         let logout = CellModel(title: "登出", autoSelect: false) {
             [weak self] in

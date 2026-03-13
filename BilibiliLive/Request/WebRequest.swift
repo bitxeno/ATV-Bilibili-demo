@@ -807,6 +807,7 @@ struct VideoDetail: Codable, Hashable {
         let redirect_url: URL?
         let stat: Stat
         var ctime: Int?
+        var charging_pay: ChargingPay?
         struct Stat: Codable, Hashable {
             let favorite: Int
             let coin: Int
@@ -846,6 +847,10 @@ struct VideoDetail: Codable, Hashable {
                     let ctime: Int
                 }
             }
+        }
+
+        struct ChargingPay: Codable, Hashable {
+            let level: Int?
         }
 
         var durationString: String {
@@ -897,7 +902,7 @@ extension VideoDetail.Info: DisplayData, PlayableData {
         leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: stat.view == 0 ? "-" : stat.view.numberString()))
         leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "list.bullet.rectangle", text: stat.danmaku == 0 ? "-" : stat.danmaku.numberString()))
         rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: TimeInterval(duration).timeString()))
-        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
+        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems, badge: charging_pay != nil ? .init(text: "充电专属") : nil)
     }
 }
 

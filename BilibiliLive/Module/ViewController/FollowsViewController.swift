@@ -127,6 +127,9 @@ struct DynamicFeedData: Codable, PlayableData, DisplayData {
         if let text = modules.module_dynamic.major?.pgc?.badge?.text {
             badge = .init(text: text)
         }
+        if let text = modules.module_dynamic.major?.archive?.badge?.text, text == "充电专属" {
+            badge = .init(text: text)
+        }
         return DisplayOverlay(leftItems: leftItems, rightItems: rightItems, badge: badge)
     }
 
@@ -165,10 +168,16 @@ struct DynamicFeedData: Codable, PlayableData, DisplayData {
                     let title: String?
                     let duration_text: String?
                     let stat: Stat?
+                    let badge: Badge?
 
                     struct Stat: Codable, Hashable {
                         let danmaku: String?
                         let play: String?
+                    }
+
+                    struct Badge: Codable, Hashable {
+                        let text: String
+                        let bg_color: String?
                     }
                 }
 

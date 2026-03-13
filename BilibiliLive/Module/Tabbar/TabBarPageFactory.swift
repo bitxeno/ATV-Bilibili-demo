@@ -28,10 +28,8 @@ class TabBarPageVCFactory {
             personalVC.extendedLayoutIncludesOpaqueBars = true
             vc = personalVC
         case .search:
-            let resultVC = SearchResultViewController()
-            let searchVC = UISearchController(searchResultsController: resultVC)
-            searchVC.searchResultsUpdater = resultVC
-            vc = UISearchContainerViewController(searchController: searchVC)
+            let searchContainerVC = SearchContainerViewController()
+            vc = searchContainerVC
         case .followBangumi:
             vc = FollowBangumiViewController()
         case .followUps:
@@ -46,7 +44,7 @@ class TabBarPageVCFactory {
 
         switch page {
         case .search:
-            vc.tabBarItem.image = UIImage(systemName: "magnifyingglass")
+            vc.tabBarItem.image = UIImage(systemName: "magnifyingglass", withConfiguration: UIImage.SymbolConfiguration(font: .preferredFont(forTextStyle: .body)))
             vc.tabBarItem.title = nil
         default:
             vc.tabBarItem.title = page.title
