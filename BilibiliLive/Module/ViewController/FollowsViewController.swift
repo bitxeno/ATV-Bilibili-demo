@@ -126,8 +126,7 @@ struct DynamicFeedData: Codable, PlayableData, DisplayData {
         var badge: DisplayOverlay.DisplayOverlayBadge?
         if let text = modules.module_dynamic.major?.pgc?.badge?.text {
             badge = .init(text: text)
-        }
-        if let text = modules.module_dynamic.major?.archive?.badge?.text, text == "充电专属" {
+        } else if let text = modules.module_dynamic.major?.archive?.badge?.text, text != "投稿视频" {
             badge = .init(text: text)
         }
         return DisplayOverlay(leftItems: leftItems, rightItems: rightItems, badge: badge)
