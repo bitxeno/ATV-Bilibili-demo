@@ -384,6 +384,12 @@ enum ApiRequest {
         let danmaku: Int
         let duration: Int
         let ctime: Int
+        let badges: [Badge]?
+
+        struct Badge: Codable, Hashable {
+            let text: String
+            let bg_color: String?
+        }
 
         // PlayableData
         var aid: Int { return Int(param) ?? 0 }
@@ -402,7 +408,12 @@ enum ApiRequest {
             leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: play == 0 ? "-" : play.numberString()))
             leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "list.bullet.rectangle", text: danmaku == 0 ? "-" : danmaku.numberString()))
             rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: TimeInterval(duration).timeString()))
-            return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
+
+            var badge: DisplayOverlay.DisplayOverlayBadge?
+            if let text = badges?.first?.text {
+                badge = .init(text: text)
+            }
+            return DisplayOverlay(leftItems: leftItems, rightItems: rightItems, badge: badge)
         }
     }
 
