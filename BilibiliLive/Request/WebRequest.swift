@@ -37,6 +37,9 @@ enum WebRequest {
         static let reportHistory = "https://api.bilibili.com/x/v2/history/report"
         static let heartbeat = "https://api.bilibili.com/x/click-interface/web/heartbeat"
         static let upSpace = "https://api.bilibili.com/x/space/wbi/arc/search"
+        static let upSpaceSeasonSeriesList = "https://api.bilibili.com/x/polymer/web-space/seasons_series_list"
+        static let upSpaceSeasonArchives = "https://api.bilibili.com/x/polymer/web-space/seasons_archives_list"
+        static let upSpaceSeriesArchives = "https://api.bilibili.com/x/series/archives"
         static let like = "https://api.bilibili.com/x/web-interface/archive/like"
         static let likeStatus = "https://api.bilibili.com/x/web-interface/archive/has/like"
         static let coin = "https://api.bilibili.com/x/web-interface/coin/add"
@@ -403,6 +406,92 @@ extension WebRequest {
         return resp.list.vlist
     }
 
+    static func requestUpSpaceSeasonSeries(mid: Int, page: Int, pageSize: Int = 20) async throws -> [UpSpaceSeasonSeriesCategory] {
+        let resp = try await requestUpSpaceSeasonSeriesListData(mid: mid, page: page, pageSize: pageSize)
+        var result = [UpSpaceSeasonSeriesCategory]()
+        result.append(contentsOf: resp.seasons_list.map {
+            UpSpaceSeasonSeriesCategory(meta: $0.meta, type: .season)
+        })
+        result.append(contentsOf: resp.series_list.map {
+            UpSpaceSeasonSeriesCategory(meta: $0.meta, type: .series)
+        })
+        return result
+    }
+
+    static func requestAllUpSpaceSeasonSeries(mid: Int, pageSize: Int = 20) async throws -> [UpSpaceSeasonSeriesCategory] {
+        var page = 1
+        var all = [UpSpaceSeasonSeriesCategory]()
+
+        while true {
+            let listData = try await requestUpSpaceSeasonSeriesListData(mid: mid, page: page, pageSize: pageSize)
+            var current = [UpSpaceSeasonSeriesCategory]()
+            current.append(contentsOf: listData.seasons_list.map {
+                UpSpaceSeasonSeriesCategory(meta: $0.meta, type: .season)
+            })
+            current.append(contentsOf: listData.series_list.map {
+                UpSpaceSeasonSeriesCategory(meta: $0.meta, type: .series)
+            })
+            if current.isEmpty {
+                break
+            }
+            all.append(contentsOf: current)
+
+            // 最后一页通常不足 pageSize，提前结束可减少一次请求
+            if current.count < pageSize {
+                break
+            }
+            page += 1
+        }
+        return all
+    }
+
+    private static func requestUpSpaceSeasonSeriesListData(mid: Int, page: Int, pageSize: Int) async throws -> UpSpaceSeasonSeriesListData {
+        struct Resp: Codable {
+            let items_lists: UpSpaceSeasonSeriesListData
+        }
+
+        let parameters: Parameters = [
+            "mid": mid,
+            "page_num": page,
+            "page_size": pageSize,
+            "web_location": "333.999",
+            "platform": "web",
+        ]
+        let resp: Resp = try await request(url: EndPoint.upSpaceSeasonSeriesList, parameters: parameters)
+        return resp.items_lists
+    }
+
+    static func requestUpSpaceSeasonArchives(mid: Int, seasonId: Int, page: Int, pageSize: Int = 20) async throws -> [UpSpaceSeasonSeriesVideoData] {
+        struct Resp: Codable {
+            let archives: [UpSpaceSeasonSeriesVideoData]?
+        }
+        let parameters: Parameters = [
+            "mid": mid,
+            "season_id": seasonId,
+            "sort_reverse": false,
+            "page_num": page,
+            "page_size": pageSize,
+        ]
+        let resp: Resp = try await request(url: EndPoint.upSpaceSeasonArchives, parameters: parameters)
+        return resp.archives ?? []
+    }
+
+    static func requestUpSpaceSeriesArchives(mid: Int, seriesId: Int, page: Int, pageSize: Int = 20) async throws -> [UpSpaceSeasonSeriesVideoData] {
+        struct Resp: Codable {
+            let archives: [UpSpaceSeasonSeriesVideoData]?
+        }
+        let parameters: Parameters = [
+            "mid": mid,
+            "series_id": seriesId,
+            "only_normal": true,
+            "sort": "desc",
+            "pn": page,
+            "ps": pageSize,
+        ]
+        let resp: Resp = try await request(url: EndPoint.upSpaceSeriesArchives, parameters: parameters)
+        return resp.archives ?? []
+    }
+
     static func requestLike(aid: Int, like: Bool) async -> Bool {
         do {
             _ = try await requestJSON(method: .post, url: EndPoint.like, parameters: ["aid": aid, "like": like ? "1" : "2"])
@@ -755,6 +844,95 @@ struct FavData: PlayableData, Codable {
         if let stat = cnt_info {
             leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: stat.play == 0 ? "-" : stat.play.numberString()))
             leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "list.bullet.rectangle", text: stat.danmaku == 0 ? "-" : stat.danmaku.numberString()))
+        }
+        rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: TimeInterval(duration).timeString()))
+        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
+    }
+}
+
+struct UpSpaceSeasonSeriesListData: Codable, Hashable {
+    let page: Page
+    let seasons_list: [Item]
+    let series_list: [Item]
+
+    struct Page: Codable, Hashable {
+        let page_num: Int
+        let page_size: Int
+        let total: Int
+    }
+
+    struct Item: Codable, Hashable {
+        let archives: [UpSpaceSeasonSeriesVideoData]?
+        let meta: UpSpaceSeasonSeriesMeta
+    }
+}
+
+struct UpSpaceSeasonSeriesMeta: Codable, Hashable {
+    let cover: URL?
+    let description: String?
+    let mid: Int
+    let total: Int?
+    let title: String?
+    let name: String?
+    let season_id: Int?
+    let series_id: Int?
+}
+
+struct UpSpaceSeasonSeriesCategory: Hashable {
+    enum CategoryType: Hashable {
+        case season
+        case series
+    }
+
+    let id: Int
+    let title: String
+    let mid: Int
+    let type: CategoryType
+
+    init(meta: UpSpaceSeasonSeriesMeta, type: CategoryType) {
+        id = type == .season ? (meta.season_id ?? 0) : (meta.series_id ?? 0)
+        title = (meta.title?.isEmpty == false ? meta.title : meta.name) ?? "-"
+        mid = meta.mid
+        self.type = type
+    }
+}
+
+struct UpSpaceSeasonSeriesVideoData: PlayableData, Codable {
+    struct Stat: Codable, Hashable {
+        let view: Int?
+        let danmaku: Int?
+    }
+
+    let aid: Int
+    let title: String
+    let pic: URL?
+    let duration: Int
+    let pubdate: Int?
+    let ctime: Int?
+    let stat: Stat?
+    let author: String?
+    var ownerNameOverride: String?
+
+    enum CodingKeys: String, CodingKey {
+        case aid, title, pic, duration, pubdate, ctime, stat, author
+    }
+
+    var cid: Int { 0 }
+    var ownerName: String { ownerNameOverride ?? author ?? "UP主" }
+
+    var date: String? {
+        guard let timestamp = pubdate ?? ctime else {
+            return nil
+        }
+        return DateFormatter.stringFor(timestamp: timestamp)
+    }
+
+    var overlay: DisplayOverlay? {
+        var leftItems = [DisplayOverlay.DisplayOverlayItem]()
+        var rightItems = [DisplayOverlay.DisplayOverlayItem]()
+        if let stat {
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: (stat.view ?? 0) == 0 ? "-" : (stat.view ?? 0).numberString()))
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "list.bullet.rectangle", text: (stat.danmaku ?? 0) == 0 ? "-" : (stat.danmaku ?? 0).numberString()))
         }
         rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: TimeInterval(duration).timeString()))
         return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)

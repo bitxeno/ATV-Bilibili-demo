@@ -12,12 +12,14 @@ class UpSpaceTitleSupplementaryView: UICollectionReusableView {
     let imageView = UIImageView()
     let nameLabel = UILabel()
     let despLabel = UILabel()
+    let seasonSeriesButton = BLCustomButton()
     let followButton = BLCustomButton()
     let blockButton = BLCustomButton()
     private let focusGuide = UIFocusGuide()
 
     var onFollowTapped: ((Bool) -> Void)?
     var onBlockTapped: ((Bool) -> Void)?
+    var onSeasonSeriesTapped: (() -> Void)?
     var mid: Int?
 
     override init(frame: CGRect) {
@@ -36,6 +38,7 @@ class UpSpaceTitleSupplementaryView: UICollectionReusableView {
         addSubview(despLabel)
         addSubview(followButton)
         addSubview(blockButton)
+        addSubview(seasonSeriesButton)
         addLayoutGuide(focusGuide)
 
         imageView.snp.makeConstraints { make in
@@ -57,8 +60,15 @@ class UpSpaceTitleSupplementaryView: UICollectionReusableView {
             make.trailing.lessThanOrEqualTo(followButton.snp.leading).offset(-40)
         }
 
-        blockButton.snp.makeConstraints { make in
+        seasonSeriesButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-30)
+            make.centerY.equalToSuperview()
+            make.width.equalTo(seasonSeriesButton.snp.height).multipliedBy(20.5 / 18.0)
+            make.height.equalTo(80)
+        }
+
+        blockButton.snp.makeConstraints { make in
+            make.trailing.equalTo(seasonSeriesButton.snp.leading).offset(-20)
             make.centerY.equalToSuperview()
             make.width.equalTo(blockButton.snp.height).multipliedBy(20.5 / 18.0)
             make.height.equalTo(80)
@@ -76,6 +86,13 @@ class UpSpaceTitleSupplementaryView: UICollectionReusableView {
         despLabel.textColor = UIColor(named: "titleColor")
         despLabel.numberOfLines = 2
 
+        seasonSeriesButton.image = UIImage(systemName: "square.stack.3d.up")
+        seasonSeriesButton.onImage = UIImage(systemName: "square.stack.3d.up.fill")
+        seasonSeriesButton.highLightImage = UIImage(systemName: "square.stack.3d.up.fill")
+        seasonSeriesButton.onPrimaryAction = { [weak self] _ in
+            self?.onSeasonSeriesTapped?()
+        }
+
         followButton.image = UIImage(systemName: "heart")
         followButton.onImage = UIImage(systemName: "heart.fill")
         followButton.onPrimaryAction = { [weak self] _ in
@@ -88,7 +105,7 @@ class UpSpaceTitleSupplementaryView: UICollectionReusableView {
             self?.blockButtonTapped()
         }
 
-        focusGuide.preferredFocusEnvironments = [followButton, blockButton]
+        focusGuide.preferredFocusEnvironments = [followButton, blockButton, seasonSeriesButton]
         focusGuide.snp.makeConstraints { make in
             make.leading.equalToSuperview()
             make.top.bottom.equalTo(followButton)

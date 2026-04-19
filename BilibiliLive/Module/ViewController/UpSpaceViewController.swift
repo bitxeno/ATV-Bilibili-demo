@@ -25,7 +25,7 @@ class UpSpaceViewController: StandardVideoCollectionViewController<ApiRequest.Up
         collectionVC.customHeaderConfig = FeedHeaderConfig(
             viewType: UpSpaceTitleSupplementaryView.self,
             estimatedHeight: 80
-        ) { [weak self] headerView, indexPath in
+        ) { [weak self] headerView, _ in
             headerView.nameLabel.text = self?.info?.name ?? "-"
             headerView.despLabel.text = self?.info?.sign ?? "-"
             if let face = self?.info?.face {
@@ -35,6 +35,9 @@ class UpSpaceViewController: StandardVideoCollectionViewController<ApiRequest.Up
             headerView.followButton.isOn = self?.info?.is_followed ?? false
             headerView.blockButton.isOn = self?.relation?.is_blocked ?? false
             headerView.followButton.isHidden = self?.relation?.is_blocked ?? false
+            headerView.onSeasonSeriesTapped = { [weak self] in
+                self?.showSeasonSeriesPage()
+            }
             headerView.onBlockTapped = { [weak self, weak headerView] isBlocked in
                 headerView?.followButton.isHidden = isBlocked
                 self?.reloadData()
@@ -74,7 +77,7 @@ class UpSpaceViewController: StandardVideoCollectionViewController<ApiRequest.Up
 
         // Update UI on main thread
         await MainActor.run {
-            updateBlockedState()
+            self.updateBlockedState()
         }
 
         // If user is blocked, return empty array
@@ -85,5 +88,12 @@ class UpSpaceViewController: StandardVideoCollectionViewController<ApiRequest.Up
         let res = try await ApiRequest.requestUpSpaceVideo(mid: mid, lastAid: lastAid)
         lastAid = res.last?.aid
         return res
+    }
+
+    private func showSeasonSeriesPage() {
+        let vc = UpSpaceSeasonSeriesViewController()
+        vc.mid = mid
+        vc.upName = info?.name
+        present(vc, animated: true)
     }
 }
