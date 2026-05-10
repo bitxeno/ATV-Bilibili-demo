@@ -51,7 +51,9 @@ class LivePlayerViewModel {
                 try await initPlayer()
 
                 let danmu = await initDanmu()
-                let linePlugin = LineCandidatesPlugin(playPlugin: playPlugin, candidates: allPlayInfos)
+                let linePlugin = LineCandidatesPlugin(candidates: playInfos) { [weak self] url in
+                    self?.playPlugin.play(urlString: url)
+                }
                 self.onPluginReady?(danmu + [linePlugin])
 
                 if let info = await fetchDespInfo() {
