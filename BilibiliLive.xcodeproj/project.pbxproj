@@ -17,6 +17,7 @@
 		499C76132931A781003160FB /* Swifter in Frameworks */ = {isa = PBXBuildFile; productRef = 499C76122931A781003160FB /* Swifter */; };
 		499C76162931A7AE003160FB /* SwiftyXMLParser in Frameworks */ = {isa = PBXBuildFile; productRef = 499C76152931A7AE003160FB /* SwiftyXMLParser */; };
 		695081FB2D0FD9E30063044D /* PocketSVG in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 49078E46291BEA2400F556BD /* PocketSVG */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		F49374B82FD15F0000074B70 /* DanmakuKit in Frameworks */ = {isa = PBXBuildFile; productRef = F49374B72FD15F0000074B70 /* DanmakuKit */; };
 		F9171D5F2900FCFB002868C7 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = F9171D5E2900FCFB002868C7 /* SnapKit */; };
 		F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */ = {isa = PBXBuildFile; productRef = F927ED64260F917D00EAB8E3 /* Gzip */; };
 		F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = F927ED9E2610B5C300EAB8E3 /* Kingfisher */; };
@@ -63,6 +64,7 @@
 			files = (
 				F9B57378260F6BB400771ED5 /* SwiftyJSON in Frameworks */,
 				F9B5736E260F652C00771ED5 /* Alamofire in Frameworks */,
+				F49374B82FD15F0000074B70 /* DanmakuKit in Frameworks */,
 				49078E47291BEA2400F556BD /* PocketSVG in Frameworks */,
 				499C76162931A7AE003160FB /* SwiftyXMLParser in Frameworks */,
 				49508E112943420100D26812 /* CocoaLumberjackSwift in Frameworks */,
@@ -81,10 +83,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F49374B62FD15F0000074B70 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		F9B57347260F5F7400771ED5 = {
 			isa = PBXGroup;
 			children = (
 				4930B8FD2D686DC30074E861 /* BilibiliLive */,
+				F49374B62FD15F0000074B70 /* Frameworks */,
 				F9B57351260F5F7400771ED5 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -133,6 +143,7 @@
 				49508E102943420100D26812 /* CocoaLumberjackSwift */,
 				0A41EE182A630FEA0066444C /* SwiftProtobuf */,
 				2806E51D2C1593A000164C10 /* LookinServer */,
+				F49374B72FD15F0000074B70 /* DanmakuKit */,
 			);
 			productName = BilibiliLive;
 			productReference = F9B57350260F5F7400771ED5 /* BilibiliLive.app */;
@@ -178,6 +189,7 @@
 				49508E0D2943420100D26812 /* XCRemoteSwiftPackageReference "CocoaLumberjack" */,
 				0A41EE172A630FEA0066444C /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 				2806E51C2C1593A000164C10 /* XCRemoteSwiftPackageReference "LookinServer" */,
+				F45E38E82FD15E18006C1DC6 /* XCRemoteSwiftPackageReference "DanmakuKit" */,
 			);
 			productRefGroup = F9B57351260F5F7400771ED5 /* Products */;
 			projectDirPath = "";
@@ -498,6 +510,14 @@
 				minimumVersion = 5.0.0;
 			};
 		};
+		F45E38E82FD15E18006C1DC6 /* XCRemoteSwiftPackageReference "DanmakuKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/qyz777/DanmakuKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.2;
+			};
+		};
 		F9171D5D2900FCFB002868C7 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit";
@@ -585,6 +605,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 499C76142931A7AE003160FB /* XCRemoteSwiftPackageReference "SwiftyXMLParser" */;
 			productName = SwiftyXMLParser;
+		};
+		F49374B72FD15F0000074B70 /* DanmakuKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F45E38E82FD15E18006C1DC6 /* XCRemoteSwiftPackageReference "DanmakuKit" */;
+			productName = DanmakuKit;
 		};
 		F9171D5E2900FCFB002868C7 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;

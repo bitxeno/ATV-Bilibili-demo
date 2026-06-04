@@ -1,5 +1,5 @@
 {
-  "originHash" : "45c5c9267c8c84275fa647f629e1033e605b18efefc17e781b907af506eb5385",
+  "originHash" : "d9adf0ea06d9796145d9b1792ccba78411549a037f4e3513e3a7530c71ba8e22",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -26,6 +26,15 @@
       "state" : {
         "revision" : "a9ed4b6f9bdedce7d77046f43adfb8ce1fd54114",
         "version" : "3.9.0"
+      }
+    },
+    {
+      "identity" : "danmakukit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/qyz777/DanmakuKit",
+      "state" : {
+        "revision" : "6e8d367592044f022a2b6ce6ea23450a120bb9c2",
+        "version" : "1.5.2"
       }
     },
     {

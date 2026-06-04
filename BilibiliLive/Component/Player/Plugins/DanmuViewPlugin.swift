@@ -7,6 +7,7 @@
 
 import AVKit
 import Combine
+import DanmakuKit
 import UIKit
 
 protocol DanmuProviderProtocol {
@@ -99,6 +100,7 @@ extension DanmuViewPlugin: CommonPlayerPlugin {
             self.timeObserver = nil
         }
         currentPlayer = nil
+        danMuView.clean()
     }
 
     func addViewToPlayerOverlay(container: UIView) {
@@ -109,7 +111,7 @@ extension DanmuViewPlugin: CommonPlayerPlugin {
         danMuView.paddingTop = 5
         danMuView.trackHeight = 50
         danMuView.displayArea = Settings.danmuArea.percent
-        danMuView.recaculateTracks()
+        danMuView.recalculateTracks()
     }
 
     func playerDidStart(player: AVPlayer) {
