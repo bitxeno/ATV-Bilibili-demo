@@ -432,16 +432,16 @@ class VideoDetailViewController: UIViewController {
     @IBAction func actionPlay(_ sender: Any) {
         let player = VideoPlayerViewController(playInfo: PlayInfo(aid: aid, cid: cid, epid: epid, seasonId: seasonId, subType: subType, lastPlayCid: lastPlayCid, playTimeInSecond: playTimeInSecond, title: data?.title))
         player.data = data
-        if pages.count > 1, let index = pages.firstIndex(where: { $0.cid == cid }) {
-            let seq = pages.dropFirst(index).map({ PlayInfo(aid: aid, cid: $0.cid, epid: $0.epid, seasonId: seasonId, subType: subType, title: $0.part) })
-            if seq.count > 0 {
+        if allUgcEpisodes.count > 1, let index = allUgcEpisodes.firstIndex(where: { $0.cid == cid }) {
+            let seq = allUgcEpisodes.dropFirst(index).map({ PlayInfo(aid: $0.aid, cid: $0.cid, title: $0.title) })
+            if seq.count > 1 {
                 let nextProvider = VideoNextProvider(seq: seq)
                 player.nextProvider = nextProvider
             }
         }
-        if allUgcEpisodes.count > 1, let index = allUgcEpisodes.firstIndex(where: { $0.cid == cid }) {
-            let seq = allUgcEpisodes.dropFirst(index).map({ PlayInfo(aid: $0.aid, cid: $0.cid, title: $0.title) })
-            if seq.count > 0 {
+        if pages.count > 1, let index = pages.firstIndex(where: { $0.cid == cid }) {
+            let seq = pages.dropFirst(index).map({ PlayInfo(aid: aid, cid: $0.cid, epid: $0.epid, seasonId: seasonId, subType: subType, title: $0.part) })
+            if seq.count > 1 {
                 let nextProvider = VideoNextProvider(seq: seq)
                 player.nextProvider = nextProvider
             }
